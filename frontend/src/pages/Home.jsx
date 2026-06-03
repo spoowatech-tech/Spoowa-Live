@@ -3,6 +3,7 @@ import { Hero } from "@/components/Hero";
 import { Bestsellers } from "@/components/Bestsellers";
 import { Activities } from "@/components/Activities";
 import { BrandCTA } from "@/components/BrandCTA";
+import { HydrationCalculator } from "@/components/HydrationCalculator";
 import { Footer } from "@/components/Footer";
 
 function Home() {
@@ -12,9 +13,10 @@ function Home() {
       <Navbar />
       <main className="animate-fade-up">
         <Hero />
-        <Bestsellers />
         <Activities />
         <BrandCTA />
+        <HydrationCalculator />
+        <Bestsellers />
       </main>
       <Footer />
     </div>

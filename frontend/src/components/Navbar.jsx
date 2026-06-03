@@ -25,14 +25,17 @@ export function AnnouncementBar() {
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const links = [
-    { label: "Product", to: "/#bestsellers" },
-    { label: "About", to: "/about" },
-    { label: "Team", to: "/team" },
+    { label: "Home", to: "/" },
+    { label: "Shop", to: "/shop" },
+    { label: "About Us", to: "/about" },
+    { label: "Ingredients", to: "/about" },
+    { label: "Blog", to: "/about" },
+    { label: "Contact", to: "/about" },
   ];
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-border/60">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <Link to="/" className="logo">
+        <Link to="/" className="logo inline-flex items-center">
           <img src={logo} alt="SPOOWA Logo" className="h-8 w-auto object-contain" />
         </Link>
 
@@ -48,13 +51,13 @@ export function Navbar() {
           <button aria-label="Search" className="hidden sm:inline-flex rounded-full p-2 hover:bg-muted">
             <Search className="h-5 w-5" />
           </button>
-          <button aria-label="Account" className="hidden sm:inline-flex rounded-full p-2 hover:bg-muted">
+          <Link to="/auth" aria-label="Account" className="hidden sm:inline-flex rounded-full p-2 hover:bg-muted">
             <User className="h-5 w-5" />
-          </button>
-          <button aria-label="Cart" className="relative rounded-full p-2 hover:bg-muted">
+          </Link>
+          <Link to="/cart" aria-label="Cart" className="relative rounded-full p-2 hover:bg-muted">
             <ShoppingBag className="h-5 w-5" />
             <span className="absolute -right-0.5 -top-0.5 grid h-5 w-5 place-items-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground">2</span>
-          </button>
+          </Link>
           <button aria-label="Menu" onClick={() => setOpen(!open)} className="lg:hidden rounded-full p-2 hover:bg-muted">
             <Menu className="h-5 w-5" />
           </button>
