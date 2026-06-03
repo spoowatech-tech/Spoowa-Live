@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import advisor1 from "@/assets/advisor-1.png";
-import advisor2 from "@/assets/advisor-2.png";
+import boardKhanna from "@/assets/board_khanna.jpg";
+import boardOberoi from "@/assets/board_oberoi.jpg";
+import boardBidhuri from "@/assets/board_bidhuri.png";
+import boardAli from "@/assets/board_ali.jpg";
+import boardNaman from "@/assets/board_naman.png";
 
 const advisors = [
   {
@@ -9,7 +12,7 @@ const advisors = [
     name: "Prof. (Dr.) Gulshan Lal Khanna",
     role: "Pioneering Sports Scientist & Advisor",
     badge: "Advisory Board",
-    image: advisor1,
+    image: boardKhanna,
     shortBio: "Prof. (Dr.) Gulshan Lal Khanna is one of India’s pioneering sports scientists whose work has significantly contributed to the development of sports science, athlete performance systems, and sports policy in India and internationally.",
     expandedContent: (
       <div className="space-y-4 text-sm text-gray-600">
@@ -24,7 +27,7 @@ const advisors = [
     name: "Mipandeep Singh Oberoi",
     role: "Strategic Growth Mentor & Advisory Partner",
     badge: "Advisory Board",
-    image: advisor2,
+    image: boardOberoi,
     shortBio: "Mipandeep Singh Oberoi serves as a startup growth mentor and advisory partner, focusing on scaling, fundraising, and refining business models.",
     expandedContent: (
       <div className="space-y-4 text-sm text-gray-600">
@@ -39,7 +42,7 @@ const advisors = [
     name: "Gaurav Bidhuri",
     role: "World Boxing Medalist & Elite Athlete Representative",
     badge: "Advisory Board",
-    image: advisor1,
+    image: boardBidhuri,
     shortBio: "Gaurav Bidhuri is a historic bronze medalist from the World Boxing Championship in Germany, holding an elite career world ranking of 11.",
     expandedContent: (
       <ul className="space-y-2 list-disc pl-5 text-sm text-gray-600">
@@ -61,7 +64,7 @@ const advisors = [
     name: "Dr. Farhan Ali, M.D, FACP",
     role: "Hospitalist & Internal Medicine Specialist",
     badge: "Medical Board",
-    image: advisor2,
+    image: boardAli,
     shortBio: "Dr. Farhan Ali is a highly accomplished Hospitalist and Internal Medicine Specialist practicing at Multicare Yakima Memorial Hospital in Washington, USA.",
     expandedContent: (
       <div className="space-y-4 text-sm text-gray-600">
@@ -75,7 +78,7 @@ const advisors = [
     name: "Naman Bhargava",
     role: "Elite Performance Coach",
     badge: "Technical Consultant",
-    image: advisor1,
+    image: boardNaman,
     shortBio: "Naman Bhargava is an Elite Performance Coach and former Delhi State Champion who has cultivated multiple national and international champions.",
     expandedContent: (
       <div className="space-y-4 text-sm text-gray-600">
@@ -158,7 +161,7 @@ function AdvisorCard({ advisor }) {
 
 export function BoardOfAdvisors() {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+    <section id="board-advisors" className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
       <div className="text-center">
         <div className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-[#FFFDF5] px-4 py-1.5 shadow-sm mb-6">
           <span className="text-xs font-bold tracking-widest text-[#D4AF37] uppercase">Leadership</span>

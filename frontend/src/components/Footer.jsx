@@ -1,4 +1,4 @@
-import { Instagram, Twitter, Youtube } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 export function Footer() {
   const cols = [
@@ -11,19 +11,24 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-12">
           <div className="lg:col-span-4">
-            <div className="flex items-center gap-2">
-              <div className="grid h-9 w-9 place-items-center rounded-full bg-background text-foreground">
-                <span className="text-display text-lg">S</span>
-              </div>
-              <span className="text-display text-2xl">SPOOWA</span>
-            </div>
-            <p className="mt-4 max-w-xs text-sm text-background/70">
+            <a href="#" className="logo inline-block bg-white p-1.5 rounded mb-4">
+              <img src={logo} alt="SPOOWA Logo" className="h-8 w-auto object-contain" />
+            </a>
+            <p className="mt-2 max-w-xs text-sm text-background/70">
               Hydration that moves with you. Real fruit, clean electrolytes, proudly made in India.
             </p>
-            <div className="mt-6 flex gap-3">
-              {[Instagram, Twitter, Youtube].map((Icon, i) => (
-                <a key={i} href="#" className="grid h-9 w-9 place-items-center rounded-full border border-background/20 hover:bg-accent hover:border-accent">
-                  <Icon className="h-4 w-4" />
+            <div className="mt-6 flex flex-wrap gap-3">
+              {[
+                { url: "https://www.linkedin.com/company/spoowa", iconClass: "fa-brands fa-linkedin-in", label: "LinkedIn" },
+                { url: "https://www.instagram.com/spoowa_official?igsh=eW93ZGhlNHR3aHlr", iconClass: "fa-brands fa-instagram", label: "Instagram" },
+                { url: "https://x.com/Spoowa_offcial", iconClass: "fa-brands fa-x-twitter", label: "X (Twitter)" },
+                { url: "https://www.facebook.com/Spoowa", iconClass: "fa-brands fa-facebook-f", label: "Facebook" },
+                { url: "https://www.threads.net/@spoowa_official?igshid=NTc4MTIwNjQ2YQ==", iconClass: "fa-brands fa-threads", label: "Threads" },
+                { url: "https://www.youtube.com/@Spoowa_offcials", iconClass: "fa-brands fa-youtube", label: "YouTube" },
+                { url: "https://in.pinterest.com/spowacorporate/_pins", iconClass: "fa-brands fa-pinterest-p", label: "Pinterest" }
+              ].map((s, i) => (
+                <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.label} className="grid h-9 w-9 place-items-center rounded-full border border-background/20 hover:bg-accent hover:border-accent hover:text-white transition-colors">
+                  <i className={`${s.iconClass} text-sm`}></i>
                 </a>
               ))}
             </div>
