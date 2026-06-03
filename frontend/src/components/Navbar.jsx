@@ -26,6 +26,7 @@ export function Navbar() {
   const links = [
     { label: "Product", href: "#bestsellers" },
     { label: "Board of Advisors", href: "#board-advisors" },
+    { label: "Team", href: "#team" },
   ];
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-border/60">

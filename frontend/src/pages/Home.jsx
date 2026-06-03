@@ -4,6 +4,7 @@ import { Bestsellers } from "@/components/Bestsellers";
 import { Activities } from "@/components/Activities";
 import { BrandCTA } from "@/components/BrandCTA";
 import { BoardOfAdvisors } from "@/components/BoardOfAdvisors";
+import { Team } from "@/components/Team";
 import { Footer } from "@/components/Footer";
 
 function Home() {
@@ -17,6 +18,7 @@ function Home() {
         <Activities />
         <BrandCTA />
         <BoardOfAdvisors />
+        <Team />
       </main>
       <Footer />
     </div>
