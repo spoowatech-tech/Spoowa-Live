@@ -1,78 +1,102 @@
 import heroCans from "@/assets/hero-cans.jpg";
-import { ArrowRight, Heart, Zap } from "lucide-react";
+import { ArrowRight, Heart, Zap, Sparkles } from "lucide-react";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-hero">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 pt-12 pb-20 sm:px-6 lg:grid-cols-12 lg:gap-6 lg:px-8 lg:pt-20 lg:pb-28">
-        {/* Copy */}
-        <div className="lg:col-span-5 lg:pt-6 animate-fade-up">
-          <h1 className="text-display text-5xl leading-[0.95] text-foreground sm:text-6xl lg:text-7xl">
+    <section className="relative overflow-hidden bg-gradient-to-br from-gray-950 via-gray-900 to-amber-950 py-12 sm:py-16 lg:py-24 text-white">
+      {/* Ambient glowing blobs */}
+      <div className="absolute top-[-10%] left-[-15%] w-[600px] h-[600px] rounded-full bg-orange-600/10 blur-[120px] pointer-events-none animate-pulse"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-[#D4AF37]/15 blur-[120px] pointer-events-none"></div>
+
+      <div className="relative mx-auto grid max-w-7xl gap-12 px-4 pb-20 sm:px-6 lg:grid-cols-12 lg:gap-8 lg:px-8 lg:pb-28">
+        {/* Left Column: Copy & Actions */}
+        <div className="lg:col-span-5 flex flex-col justify-center animate-fade-up">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-[11px] font-extrabold tracking-widest text-[#D4AF37] uppercase w-fit mb-6 backdrop-blur-md">
+            <Sparkles className="h-3.5 w-3.5 text-[#D4AF37]" />
+            <span>Pure Hydration & Energy</span>
+          </div>
+
+          <h1 className="text-display text-5xl leading-[0.95] text-white sm:text-6xl lg:text-7xl">
             HYDRATION
             <br />
             THAT MOVES
             <br />
-            <span className="text-accent">WITH YOU</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-[#D4AF37] font-black">
+              WITH YOU
+            </span>
           </h1>
-          <p className="mt-6 max-w-md text-base text-muted-foreground sm:text-lg">
-            Real fruit flavors. Essential electrolytes. Made for every move you make.
+
+          <p className="mt-6 max-w-md text-base text-gray-300 leading-relaxed">
+            Real fruit flavors. Essential electrolytes. Honey base formulas designed in India to optimize stamina and speed recovery.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a href="#bestsellers" className="group inline-flex items-center gap-2 rounded-full bg-foreground px-7 py-4 text-sm font-bold tracking-wide text-background transition-all hover:bg-accent">
+
+          <div className="mt-8 flex flex-wrap gap-4">
+            <a 
+              href="#bestsellers" 
+              className="group inline-flex items-center gap-2 rounded-full bg-[#D4AF37] px-7 py-4 text-xs font-bold tracking-widest text-white shadow-lg transition-all hover:bg-[#b8931d] hover:scale-102"
+            >
               SHOP NOW
-              <span className="grid h-6 w-6 place-items-center rounded-full bg-[color:var(--lime)] text-foreground transition-transform group-hover:translate-x-0.5">
-                <Zap className="h-3.5 w-3.5" />
+              <span className="grid h-6 w-6 place-items-center rounded-full bg-white/25 text-white transition-transform group-hover:translate-x-0.5">
+                <Zap className="h-3.5 w-3.5 fill-current" />
               </span>
             </a>
-            <a href="#flavors" className="inline-flex items-center gap-2 rounded-full border-2 border-foreground bg-transparent px-7 py-4 text-sm font-bold tracking-wide text-foreground transition-colors hover:bg-foreground hover:text-background">
+            <a 
+              href="#bestsellers" 
+              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm px-7 py-4 text-xs font-bold tracking-widest text-white transition-all hover:bg-white/10"
+            >
               EXPLORE FLAVORS
             </a>
           </div>
 
           <div className="mt-10">
-            <p className="text-xs font-semibold tracking-wide text-foreground/70">Trusted by 50,000+ athletes</p>
+            <p className="text-[10px] font-extrabold tracking-wider text-gray-400 uppercase">Trusted by 50,000+ athletes</p>
             <div className="mt-3 flex items-center gap-3">
               <div className="flex -space-x-2">
                 {["#f97316", "#a855f7", "#0ea5e9", "#84cc16"].map((c, i) => (
-                  <div key={i} className="h-9 w-9 rounded-full border-2 border-white" style={{ background: c }} />
+                  <div key={i} className="h-9 w-9 rounded-full border-2 border-gray-900" style={{ background: c }} />
                 ))}
               </div>
-              <span className="text-sm font-bold">+50K</span>
+              <span className="text-sm font-extrabold text-[#D4AF37]">+50K Active Users</span>
             </div>
           </div>
         </div>
 
-        {/* Image */}
-        <div className="relative lg:col-span-7">
-          <div className="absolute right-2 top-2 z-10 inline-flex items-center gap-1.5 rounded-full bg-accent px-3.5 py-1.5 text-[11px] font-bold tracking-wide text-accent-foreground shadow-lift">
-            <Heart className="h-3.5 w-3.5 fill-current" /> MADE IN INDIA
+        {/* Right Column: Image Presentation */}
+        <div className="relative lg:col-span-7 flex items-center justify-center">
+          <div className="absolute right-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-[#D4AF37] px-3.5 py-1.5 text-[10px] font-extrabold tracking-wider text-white shadow-lg uppercase">
+            <Heart className="h-3.5 w-3.5 fill-current text-white animate-pulse" /> Made in India
           </div>
-          <img
-            src={heroCans}
-            alt="Spoowa Citrus Burst, Berry Blitz, Tropical Tide and Melon Mist hydration cans with splashing water"
-            width={1536}
-            height={1024}
-            className="relative w-full animate-float drop-shadow-2xl"
-          />
+          <div className="w-full relative rounded-3xl overflow-hidden p-2">
+            <img
+              src={heroCans}
+              alt="Spoowa hydration cans splashing water"
+              width={1536}
+              height={1024}
+              className="w-full animate-float drop-shadow-[0_20px_50px_rgba(212,175,55,0.15)] rounded-2xl"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Feature strip */}
+      {/* Feature Strip */}
       <div className="relative mx-auto -mt-6 max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 md:grid-cols-4 backdrop-blur-md">
           {[
             { icon: "⚡", title: "FASTER HYDRATION", desc: "Advanced electrolyte formula", color: "var(--lime)" },
-            { icon: "🌿", title: "CLEAN & HEALTHY", desc: "No artificial colors or flavors", color: "var(--melon)" },
-            { icon: "💪", title: "PERFORMANCE", desc: "Supports endurance & recovery", color: "var(--citrus)" },
-            { icon: "🇮🇳", title: "MADE IN INDIA", desc: "Proudly Indian. Trusted by thousands.", color: "var(--berry)" },
+            { icon: "🍯", title: "RAW HONEY SWEETENED", desc: "Natural monk-fruit sweet base", color: "var(--melon)" },
+            { icon: "💪", title: "PERFORMANCE BOOST", desc: "Supports stamina & endurance", color: "var(--citrus)" },
+            { icon: "🇮🇳", title: "MADE IN INDIA", desc: "Formulated for active lives", color: "var(--berry)" },
           ].map((f) => (
-            <div key={f.title} className="flex items-start gap-3 bg-white p-5">
-              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-xl" style={{ background: `color-mix(in oklab, ${f.color} 18%, white)` }}>
+            <div key={f.title} className="flex items-start gap-3 bg-gray-900/60 p-5 hover:bg-gray-900/80 transition-colors">
+              <div 
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-xl border border-white/5" 
+                style={{ background: `color-mix(in oklab, ${f.color} 15%, transparent)` }}
+              >
                 <span>{f.icon}</span>
               </div>
               <div>
-                <p className="text-xs font-bold tracking-wide">{f.title}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">{f.desc}</p>
+                <p className="text-[11px] font-bold tracking-wider uppercase text-gray-200">{f.title}</p>
+                <p className="mt-1 text-[11px] text-gray-400 leading-tight">{f.desc}</p>
               </div>
             </div>
           ))}

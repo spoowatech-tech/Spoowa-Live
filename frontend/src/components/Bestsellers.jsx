@@ -175,14 +175,14 @@ export function Bestsellers() {
         </div>
       </div>
 
-      {/* Interactive Hydration Calculator Widget */}
-      <div className="mt-20 p-6 sm:p-10 rounded-[32px] border border-gray-100 bg-[#FFFDF5] shadow-sm max-w-4xl mx-auto">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-gray-100">
+      {/* Interactive Hydration Calculator Widget (Full-Width & Extra Golden) */}
+      <div className="mt-24 p-8 sm:p-12 rounded-[40px] border-2 border-[#D4AF37] bg-gradient-to-br from-[#FFFDF5] via-[#FFFBF0] to-[#FCF1C5]/40 shadow-[0_20px_50px_rgba(212,175,55,0.22)] w-full transition-all hover:shadow-[0_25px_60px_rgba(212,175,55,0.3)]">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-[#D4AF37]/20">
           <div>
-            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <BatteryCharging className="h-5 w-5 text-[#D4AF37]" /> SPOOWA Hydration Calculator
+            <h3 className="text-display text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <BatteryCharging className="h-6 w-6 text-[#D4AF37] animate-bounce" /> SPOOWA Hydration Calculator
             </h3>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-600 mt-1 font-medium">
               Select your activity and training duration to calculate your performance recovery requirements.
             </p>
           </div>
@@ -191,10 +191,10 @@ export function Bestsellers() {
               <button
                 key={actKey}
                 onClick={() => setActivity(actKey)}
-                className={`px-4 py-2 rounded-full text-[11px] font-bold transition-all border ${
+                className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all border ${
                   activity === actKey
-                    ? "bg-gray-900 text-white border-gray-900"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+                    ? "bg-[#D4AF37] text-white border-[#D4AF37] shadow-md scale-102"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-[#D4AF37]/50"
                 }`}
               >
                 {activities[actKey].label}
@@ -203,13 +203,13 @@ export function Bestsellers() {
           </div>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-12 mt-8 items-center">
+        <div className="grid gap-10 md:grid-cols-12 mt-8 items-center">
           {/* Left inputs */}
           <div className="md:col-span-6 flex flex-col gap-6">
             <div>
-              <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-2">
+              <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-3">
                 <span>Workout Duration</span>
-                <span className="text-[#D4AF37] bg-white border border-[#D4AF37]/20 px-2 py-0.5 rounded-full">{duration} Min</span>
+                <span className="text-white bg-[#D4AF37] px-3 py-1 rounded-full text-[11px] font-bold shadow-sm">{duration} Min</span>
               </div>
               <input
                 type="range"
@@ -218,9 +218,9 @@ export function Bestsellers() {
                 step="15"
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#D4AF37]"
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#D4AF37] focus:outline-none"
               />
-              <div className="flex justify-between text-[9px] font-bold text-gray-400 mt-1">
+              <div className="flex justify-between text-[10px] font-bold text-gray-400 mt-2">
                 <span>15 Mins</span>
                 <span>90 Mins</span>
                 <span>180 Mins</span>
@@ -229,29 +229,29 @@ export function Bestsellers() {
           </div>
 
           {/* Right outputs */}
-          <div className="md:col-span-6 grid grid-cols-3 gap-3">
-            <div className="bg-white border border-gray-100 rounded-2xl p-4 text-center">
-              <span className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Drink Intake</span>
-              <p className="text-display text-2xl text-[#D4AF37] mt-1">{calculateDrinkIntake()}</p>
+          <div className="md:col-span-6 grid grid-cols-3 gap-4">
+            <div className="bg-white border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] rounded-3xl p-5 text-center transition-all shadow-sm">
+              <span className="text-[10px] font-extrabold tracking-wider text-gray-400 uppercase">Drink Intake</span>
+              <p className="text-display text-3xl text-[#D4AF37] mt-1 font-black">{calculateDrinkIntake()}</p>
               <span className="text-[9px] font-bold text-gray-500 uppercase">Cans</span>
             </div>
             
-            <div className="bg-white border border-gray-100 rounded-2xl p-4 text-center">
-              <span className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Electrolytes</span>
-              <p className="text-display text-2xl text-[#D4AF37] mt-1">{calculateElectrolytes()}</p>
+            <div className="bg-white border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] rounded-3xl p-5 text-center transition-all shadow-sm">
+              <span className="text-[10px] font-extrabold tracking-wider text-gray-400 uppercase">Electrolytes</span>
+              <p className="text-display text-3xl text-[#D4AF37] mt-1 font-black">{calculateElectrolytes()}</p>
               <span className="text-[9px] font-bold text-gray-500 uppercase">mg</span>
             </div>
 
-            <div className="bg-white border border-gray-100 rounded-2xl p-4 text-center">
-              <span className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Stamina Gain</span>
-              <p className="text-display text-2xl text-emerald-600 mt-1">+{calculateStaminaBonus()}%</p>
+            <div className="bg-white border-2 border-emerald-500/20 hover:border-emerald-500 rounded-3xl p-5 text-center transition-all shadow-sm">
+              <span className="text-[10px] font-extrabold tracking-wider text-gray-400 uppercase">Stamina Gain</span>
+              <p className="text-display text-3xl text-emerald-600 mt-1 font-black">+{calculateStaminaBonus()}%</p>
               <span className="text-[9px] font-bold text-emerald-600 uppercase">Bonus</span>
             </div>
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase">
-          <Trophy className="h-3.5 w-3.5 text-[#D4AF37]" /> Powered by Raw Honey & Monk Fruit base formula
+        <div className="mt-8 flex items-center justify-center gap-1.5 text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider bg-white/60 border border-[#D4AF37]/15 py-2.5 px-4 rounded-full w-fit mx-auto shadow-sm">
+          <Trophy className="h-4 w-4 text-[#D4AF37]" /> Powered by Raw Honey & Monk Fruit base formula
         </div>
       </div>
     </section>
