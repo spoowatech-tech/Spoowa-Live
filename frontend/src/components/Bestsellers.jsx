@@ -1,258 +1,119 @@
-import { useState } from "react";
-import { Zap, Sparkles, Check, Flame, Trophy, BatteryCharging, ArrowRight } from "lucide-react";
-import productCan from "@/assets/product_can.png";
-import productHoney from "@/assets/product_honey.png";
+import { ArrowRight, ChevronLeft, ChevronRight, ShoppingCart, Star } from "lucide-react";
+import { Link } from "react-router-dom";
+import citrusCan from "@/assets/can-citrus.jpg";
+import berryCan from "@/assets/can-berry.jpg";
+import tropicalCan from "@/assets/can-tropical.jpg";
+import melonCan from "@/assets/can-melon.jpg";
+
+const products = [
+  {
+    name: "CITRUS BURST",
+    description: "Super Electrolytes",
+    rating: 4.8,
+    reviews: 120,
+    price: "₹149",
+    image: citrusCan,
+    tint: "from-orange-50 to-white",
+  },
+  {
+    name: "BERRY BLITZ",
+    description: "Extra Electrolytes",
+    rating: 4.8,
+    reviews: 98,
+    price: "₹149",
+    image: berryCan,
+    tint: "from-fuchsia-50 to-white",
+  },
+  {
+    name: "TROPICAL TIDE",
+    description: "Super Electrolytes",
+    rating: 4.9,
+    reviews: 110,
+    price: "₹149",
+    image: tropicalCan,
+    tint: "from-cyan-50 to-white",
+  },
+  {
+    name: "MELON MIST",
+    description: "Super Electrolytes",
+    rating: 4.7,
+    reviews: 89,
+    price: "₹149",
+    image: melonCan,
+    tint: "from-lime-50 to-white",
+  },
+];
 
 export function Bestsellers() {
-  const [activeTab, setActiveTab] = useState("drink"); // "drink" or "honey"
-  
-  // Calculator state
-  const [activity, setActivity] = useState("run"); // "run", "cycle", "gym", "box"
-  const [duration, setDuration] = useState(60); // minutes
-
-  // Activity config
-  const activities = {
-    run: { label: "Running 🏃", factor: 1.2, name: "Running" },
-    cycle: { label: "Cycling 🚴", factor: 1.0, name: "Cycling" },
-    gym: { label: "Gym & Strength 🏋️", factor: 0.9, name: "Gym Workout" },
-    box: { label: "Boxing & Sparring 🥊", factor: 1.5, name: "Boxing Session" }
-  };
-
-  // Live calculations
-  const calculateDrinkIntake = () => {
-    const baseCans = (duration / 45) * activities[activity].factor;
-    return Math.max(1, Math.round(baseCans * 2) / 2); // rounded to nearest 0.5 can, minimum 1 can
-  };
-
-  const calculateElectrolytes = () => {
-    return Math.round(duration * 14 * activities[activity].factor); // mg
-  };
-
-  const calculateStaminaBonus = () => {
-    return Math.min(95, Math.round((duration / 1.5) * activities[activity].factor)); // %
-  };
-
-  const products = {
-    drink: {
-      name: "SPOOWA Hydration X Energy Drink",
-      tagline: "Sporty, Skilled & Fit Nation",
-      badge: "Pure Electrolytes & Honey Sweetened",
-      description: "SPOOWA Hydration X Energy Drink is engineered specifically for athletes. Brewed with organic raw honey and natural monk-fruit, it delivers instant, jitter-free energy with 4x faster cellular hydration.",
-      image: productCan,
-      gradient: "from-orange-500/25 via-blue-500/10 to-orange-100/50",
-      textColor: "text-orange-600",
-      bullets: [
-        "Jitter-Free Clean Energy base",
-        "Infused with Pure Raw Honey & Monk-fruit",
-        "Essential Electrolytes & Vitamins",
-        "Zero Added Refined Sugar & Chemicals"
-      ]
-    },
-    honey: {
-      name: "SPOOWA Unprocessed Mustard Honey",
-      tagline: "A Gift For Your Health",
-      badge: "Pure Organic Mustard Field Harvest",
-      description: "Harvested directly from the premium yellow mustard fields of India, SPOOWA Pure Organic Unprocessed Honey is a natural powerhouse of enzymes and minerals. It provides long-lasting, slow-release energy for recovery.",
-      image: productHoney,
-      gradient: "from-amber-500/25 via-yellow-500/10 to-amber-100/50",
-      textColor: "text-amber-600",
-      bullets: [
-        "100% Raw, Pure, and Unprocessed",
-        "Sourced from the fertile Mustard Fields of India",
-        "Rich in active antioxidants and enzymes",
-        "Ideal natural sweetener for performance recovery"
-      ]
-    }
-  };
-
-  const activeProduct = products[activeTab];
-
   return (
-    <section id="bestsellers" className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 bg-white">
-      <div className="text-center mb-12">
-        <div className="inline-flex items-center justify-center gap-2 rounded-full border border-gray-200 bg-[#FFFDF5] px-4 py-1.5 shadow-sm mb-6">
-          <span className="text-xs font-bold tracking-widest text-[#D4AF37] uppercase flex items-center gap-1">
-            <Sparkles className="h-3.5 w-3.5 animate-pulse" /> Launching Soon
-          </span>
+    <section id="bestsellers" className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div>
+          <p className="text-xs font-extrabold tracking-[0.2em] text-muted-foreground uppercase">Best Sellers</p>
+          <h2 className="mt-2 text-display text-3xl sm:text-4xl">Our most loved cans</h2>
         </div>
-        <h2 className="text-display text-4xl leading-[0.95] sm:text-5xl uppercase">
-          Interactive Product Showcase
-        </h2>
-        <p className="mt-4 mx-auto max-w-2xl text-base text-gray-500">
-          Toggle between our flagship products, explore their clean Indian ingredients, and calculate your hydration needs live.
-        </p>
+        <Link to="/shop" className="hidden items-center gap-2 text-xs font-bold tracking-wider uppercase text-foreground/80 transition-colors hover:text-accent sm:inline-flex">
+          View all products
+          <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
 
-      {/* Tabs */}
-      <div className="flex justify-center gap-4 mb-12">
-        <button
-          onClick={() => setActiveTab("drink")}
-          className={`px-6 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-            activeTab === "drink"
-              ? "bg-[#D4AF37] text-white border-[#D4AF37] shadow-md scale-102"
-              : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
-          }`}
-        >
-          Hydration X Energy Drink ⚡
+      <div className="relative">
+        <button type="button" aria-label="Previous products" className="absolute left-0 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-white p-3 shadow-md lg:grid place-items-center">
+          <ChevronLeft className="h-4 w-4 text-foreground/70" />
         </button>
-        <button
-          onClick={() => setActiveTab("honey")}
-          className={`px-6 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-            activeTab === "honey"
-              ? "bg-[#D4AF37] text-white border-[#D4AF37] shadow-md scale-102"
-              : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
-          }`}
-        >
-          Organic Mustard Honey 🍯
+        <button type="button" aria-label="Next products" className="absolute right-0 top-1/2 z-10 hidden translate-x-1/2 -translate-y-1/2 rounded-full border border-border bg-white p-3 shadow-md lg:grid place-items-center">
+          <ChevronRight className="h-4 w-4 text-foreground/70" />
         </button>
-      </div>
 
-      {/* Product Display Block */}
-      <div className="grid gap-12 lg:grid-cols-12 items-center">
-        {/* Left: Product Image with dynamic gradient container */}
-        <div className="lg:col-span-5 flex justify-center">
-          <div className={`relative w-full max-w-md aspect-square rounded-[36px] bg-gradient-to-tr ${activeProduct.gradient} p-8 flex items-center justify-center shadow-sm overflow-hidden border border-gray-100 group`}>
-            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-            <img
-              src={activeProduct.image}
-              alt={activeProduct.name}
-              className="max-h-[90%] max-w-[90%] object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-105 group-hover:rotate-1"
-            />
-          </div>
-        </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {products.map((product, idx) => (
+            <article key={product.name} className="relative rounded-3xl border border-border bg-white p-4 shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-md">
+              <Link to={`/product/${idx}`} className="block">
+                <div className={`flex aspect-[4/5] items-center justify-center rounded-[24px] bg-gradient-to-b ${product.tint} p-5`}>
+                  <img src={product.image} alt={product.name} className="max-h-full max-w-full object-contain drop-shadow-[0_18px_22px_rgba(0,0,0,0.12)]" />
+                </div>
+              </Link>
 
-        {/* Right: Product details */}
-        <div className="lg:col-span-7 flex flex-col justify-center">
-          <span className={`text-[10px] font-extrabold tracking-widest uppercase ${activeProduct.textColor} bg-[#FFFDF5] border border-gray-100 px-3 py-1 rounded-full w-fit mb-4`}>
-            {activeProduct.badge}
-          </span>
-          <h3 className="text-display text-3xl sm:text-4xl text-gray-900 leading-tight">
-            {activeProduct.name}
-          </h3>
-          <p className="mt-2 text-sm font-semibold text-[#D4AF37] uppercase tracking-wide">
-            {activeProduct.tagline}
-          </p>
-          <p className="mt-5 text-sm leading-relaxed text-gray-500">
-            {activeProduct.description}
-          </p>
+              <div className="px-1 pt-4">
+                <Link to={`/product/${idx}`} className="block">
+                  <h3 className="text-sm font-extrabold tracking-wide text-foreground hover:text-[#D88A00] transition-colors">{product.name}</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">{product.description}</p>
+                </Link>
 
-          {/* Bullets */}
-          <ul className="mt-6 space-y-3">
-            {activeProduct.bullets.map((bullet, i) => (
-              <li key={i} className="flex items-center gap-3 text-xs font-semibold text-gray-700">
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-[#FFFDF5] text-[#D4AF37] border border-[#D4AF37]/20 shrink-0">
-                  <Check className="h-3.5 w-3.5" />
-                </span>
-                {bullet}
-              </li>
-            ))}
-          </ul>
+                <div className="mt-3 flex items-center gap-2 text-xs text-foreground/80">
+                  <div className="flex items-center gap-0.5 text-amber-400">
+                    <Star className="h-3.5 w-3.5 fill-current" />
+                    <Star className="h-3.5 w-3.5 fill-current" />
+                    <Star className="h-3.5 w-3.5 fill-current" />
+                    <Star className="h-3.5 w-3.5 fill-current" />
+                    <Star className="h-3.5 w-3.5 fill-current opacity-70" />
+                  </div>
+                  <span className="font-medium">{product.rating} ({product.reviews})</span>
+                </div>
 
-          {/* Pre-order/Newsletter box */}
-          <div className="mt-8 p-6 rounded-2xl bg-gray-50 border border-gray-100 max-w-xl">
-            <h4 className="text-xs font-extrabold uppercase tracking-wider text-gray-800 flex items-center gap-1.5">
-              <Flame className="h-4 w-4 text-[#D4AF37] animate-bounce" /> Early Access Pre-Order
-            </h4>
-            <p className="mt-1 text-[11px] text-gray-500">
-              Join our exclusive launch circle. Get 20% off and free shipping on your first box.
-            </p>
-            <form onSubmit={(e) => e.preventDefault()} className="mt-4 flex flex-col sm:flex-row gap-2">
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                required
-                className="flex-1 bg-white border border-gray-200 px-4 py-2.5 rounded-full text-xs font-medium placeholder:text-gray-400 focus:outline-none focus:border-[#D4AF37] transition-colors"
-              />
-              <button
-                type="submit"
-                className="bg-gray-900 hover:bg-[#D4AF37] text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1 shrink-0"
-              >
-                <span>Notify Me</span>
-                <ArrowRight className="h-3.5 w-3.5" />
-              </button>
-            </form>
-          </div>
+                <div className="mt-4 flex items-center justify-between">
+                  <p className="text-lg font-extrabold text-foreground">{product.price}</p>
+                </div>
+
+                <button
+                  type="button"
+                  className="mt-4 flex w-full items-center justify-between rounded-xl bg-foreground px-4 py-3 text-xs font-bold tracking-[0.18em] text-white transition-colors hover:bg-accent"
+                >
+                  <span>ADD TO CART</span>
+                  <ShoppingCart className="h-4 w-4" />
+                </button>
+              </div>
+            </article>
+          ))}
         </div>
       </div>
 
-      {/* Interactive Hydration Calculator Widget (Full-Width & Extra Golden) */}
-      <div className="mt-24 p-8 sm:p-12 rounded-[40px] border-2 border-[#D4AF37] bg-gradient-to-br from-[#FFFDF5] via-[#FFFBF0] to-[#FCF1C5]/40 shadow-[0_20px_50px_rgba(212,175,55,0.22)] w-full transition-all hover:shadow-[0_25px_60px_rgba(212,175,55,0.3)]">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-[#D4AF37]/20">
-          <div>
-            <h3 className="text-display text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <BatteryCharging className="h-6 w-6 text-[#D4AF37] animate-bounce" /> SPOOWA Hydration Calculator
-            </h3>
-            <p className="text-xs text-gray-600 mt-1 font-medium">
-              Select your activity and training duration to calculate your performance recovery requirements.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {Object.keys(activities).map((actKey) => (
-              <button
-                key={actKey}
-                onClick={() => setActivity(actKey)}
-                className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all border ${
-                  activity === actKey
-                    ? "bg-[#D4AF37] text-white border-[#D4AF37] shadow-md scale-102"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-[#D4AF37]/50"
-                }`}
-              >
-                {activities[actKey].label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid gap-10 md:grid-cols-12 mt-8 items-center">
-          {/* Left inputs */}
-          <div className="md:col-span-6 flex flex-col gap-6">
-            <div>
-              <div className="flex items-center justify-between text-xs font-bold text-gray-700 mb-3">
-                <span>Workout Duration</span>
-                <span className="text-white bg-[#D4AF37] px-3 py-1 rounded-full text-[11px] font-bold shadow-sm">{duration} Min</span>
-              </div>
-              <input
-                type="range"
-                min="15"
-                max="180"
-                step="15"
-                value={duration}
-                onChange={(e) => setDuration(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#D4AF37] focus:outline-none"
-              />
-              <div className="flex justify-between text-[10px] font-bold text-gray-400 mt-2">
-                <span>15 Mins</span>
-                <span>90 Mins</span>
-                <span>180 Mins</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right outputs */}
-          <div className="md:col-span-6 grid grid-cols-3 gap-4">
-            <div className="bg-white border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] rounded-3xl p-5 text-center transition-all shadow-sm">
-              <span className="text-[10px] font-extrabold tracking-wider text-gray-400 uppercase">Drink Intake</span>
-              <p className="text-display text-3xl text-[#D4AF37] mt-1 font-black">{calculateDrinkIntake()}</p>
-              <span className="text-[9px] font-bold text-gray-500 uppercase">Cans</span>
-            </div>
-            
-            <div className="bg-white border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] rounded-3xl p-5 text-center transition-all shadow-sm">
-              <span className="text-[10px] font-extrabold tracking-wider text-gray-400 uppercase">Electrolytes</span>
-              <p className="text-display text-3xl text-[#D4AF37] mt-1 font-black">{calculateElectrolytes()}</p>
-              <span className="text-[9px] font-bold text-gray-500 uppercase">mg</span>
-            </div>
-
-            <div className="bg-white border-2 border-emerald-500/20 hover:border-emerald-500 rounded-3xl p-5 text-center transition-all shadow-sm">
-              <span className="text-[10px] font-extrabold tracking-wider text-gray-400 uppercase">Stamina Gain</span>
-              <p className="text-display text-3xl text-emerald-600 mt-1 font-black">+{calculateStaminaBonus()}%</p>
-              <span className="text-[9px] font-bold text-emerald-600 uppercase">Bonus</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 flex items-center justify-center gap-1.5 text-[10px] font-bold text-[#D4AF37] uppercase tracking-wider bg-white/60 border border-[#D4AF37]/15 py-2.5 px-4 rounded-full w-fit mx-auto shadow-sm">
-          <Trophy className="h-4 w-4 text-[#D4AF37]" /> Powered by Raw Honey & Monk Fruit base formula
-        </div>
+      <div className="mt-6 flex justify-center sm:hidden">
+        <Link to="/shop" className="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-foreground/80 transition-colors hover:text-accent">
+          View all products
+          <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
     </section>
   );

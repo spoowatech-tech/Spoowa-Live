@@ -3,6 +3,10 @@ import { useEffect } from 'react';
 import Home from './pages/Home';
 import About from './pages/About';
 import TeamPage from './pages/TeamPage';
+import Auth from './pages/Auth';
+import Cart from './pages/Cart';
+import ProductDetail from './pages/ProductDetail';
+import Shop from './pages/Shop';
 import NotFound from './pages/NotFound';
 
 // Utility component to handle smooth scrolling to #hash anchors on page load or navigation
@@ -35,6 +39,10 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/team" element={<TeamPage />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/shop" element={<Shop />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

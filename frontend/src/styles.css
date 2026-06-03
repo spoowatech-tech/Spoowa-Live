@@ -87,6 +87,11 @@
 }
 
 @layer utilities {
+  :where(.mx-auto.max-w-7xl) {
+    width: min(96vw, 1800px);
+    max-width: 1800px;
+  }
+
   .text-display { font-family: var(--font-display); letter-spacing: -0.02em; }
   .bg-hero { background: var(--hero-bg); }
   .shadow-card { box-shadow: var(--shadow-card); }
