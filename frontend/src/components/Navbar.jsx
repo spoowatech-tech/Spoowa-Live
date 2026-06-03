@@ -1,5 +1,6 @@
 import { Search, User, ShoppingBag, Menu } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import logo from "@/assets/logo.png";
 
 export function AnnouncementBar() {
@@ -24,22 +25,22 @@ export function AnnouncementBar() {
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const links = [
-    { label: "Product", href: "#bestsellers" },
-    { label: "Board of Advisors", href: "#board-advisors" },
-    { label: "Team", href: "#team" },
+    { label: "Product", to: "/#bestsellers" },
+    { label: "About", to: "/about" },
+    { label: "Team", to: "/team" },
   ];
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-border/60">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <a href="#" className="logo">
+        <Link to="/" className="logo">
           <img src={logo} alt="SPOOWA Logo" className="h-8 w-auto object-contain" />
-        </a>
+        </Link>
 
         <nav className="hidden items-center gap-9 lg:flex">
           {links.map((l) => (
-            <a key={l.label} href={l.href} className="text-sm font-bold tracking-wide text-foreground/80 transition-colors hover:text-accent">
+            <Link key={l.label} to={l.to} className="text-sm font-bold tracking-wide text-foreground/80 transition-colors hover:text-accent">
               {l.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
@@ -63,7 +64,7 @@ export function Navbar() {
         <div className="border-t border-border bg-white lg:hidden">
           <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
             {links.map((l) => (
-              <a key={l.label} href={l.href} className="rounded-md px-2 py-2.5 text-sm font-bold hover:bg-muted">{l.label}</a>
+              <Link key={l.label} to={l.to} onClick={() => setOpen(false)} className="rounded-md px-2 py-2.5 text-sm font-bold hover:bg-muted">{l.label}</Link>
             ))}
           </div>
         </div>

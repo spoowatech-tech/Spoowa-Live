@@ -3,8 +3,6 @@ import { Hero } from "@/components/Hero";
 import { Bestsellers } from "@/components/Bestsellers";
 import { Activities } from "@/components/Activities";
 import { BrandCTA } from "@/components/BrandCTA";
-import { BoardOfAdvisors } from "@/components/BoardOfAdvisors";
-import { Team } from "@/components/Team";
 import { Footer } from "@/components/Footer";
 
 function Home() {
@@ -12,13 +10,11 @@ function Home() {
     <div className="min-h-screen bg-background">
       <AnnouncementBar />
       <Navbar />
-      <main>
+      <main className="animate-fade-up">
         <Hero />
         <Bestsellers />
         <Activities />
         <BrandCTA />
-        <BoardOfAdvisors />
-        <Team />
       </main>
       <Footer />
     </div>
