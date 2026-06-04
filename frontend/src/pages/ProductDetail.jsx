@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   ChevronRight, Star, Heart, Minus, Plus, ShoppingCart, Play, Search,
   MapPin, Check, Truck, RotateCcw, ShieldCheck, Tag, Droplets, Ban, Leaf, Zap, Shield, Sparkles, ChevronLeft, FlaskConical
@@ -7,11 +7,43 @@ import {
 import { Navbar, AnnouncementBar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import productHoney from "@/assets/product_honey.png";
+import { getProductById } from "@/services/api";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 export default function ProductDetail() {
-  const [size, setSize] = useState("500g");
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [size, setSize] = useState("");
   const [qty, setQty] = useState(1);
   const [activeTab, setActiveTab] = useState("Description");
+  const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+
+  useEffect(() => {
+    async function fetchProduct() {
+      try {
+        const data = await getProductById(id);
+        setProduct(data);
+        if (data.sizes?.length) {
+          setSize(data.sizes[0].size_label);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProduct();
+  }, [id]);
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center font-bold">Loading...</div>;
+  if (!product) return <div className="min-h-screen flex items-center justify-center font-bold">Product Not Found</div>;
+
+  const isWishlisted = isInWishlist(product.id);
+  const savings = product.originalPrice - product.price;
 
   // Placeholder thumbnails
   const thumbnails = [1, 2, 3, 4, 5];
@@ -28,9 +60,9 @@ export default function ProductDetail() {
           <ChevronRight className="h-3.5 w-3.5 shrink-0" />
           <Link to="/shop" className="hover:text-gray-900 transition-colors">Shop</Link>
           <ChevronRight className="h-3.5 w-3.5 shrink-0" />
-          <span className="hover:text-gray-900 transition-colors">Raw Honey</span>
+          <span className="hover:text-gray-900 transition-colors">{product.type}</span>
           <ChevronRight className="h-3.5 w-3.5 shrink-0" />
-          <span className="text-[#F4B000]">Raw Forest Honey</span>
+          <span className="text-[#F4B000]">{product.name}</span>
         </nav>
 
         {/* Top Product Section */}
@@ -38,17 +70,17 @@ export default function ProductDetail() {
           
           {/* Left Column: Image Gallery (Col 5) */}
           <div className="lg:col-span-5 flex flex-col gap-4">
-            <div className="relative aspect-[4/4.5] w-full rounded-[32px] bg-[#FFF8E8] flex items-center justify-center p-8 overflow-hidden group border border-[#F4B000]/10 shadow-sm">
+            <div className={`relative aspect-[4/4.5] w-full rounded-[32px] bg-gradient-to-br ${product.gradient} flex items-center justify-center p-8 overflow-hidden group border border-[#F4B000]/10 shadow-sm`}>
               <span className="absolute top-6 left-6 bg-[#F4B000] text-white text-[11px] font-bold px-3 py-1.5 rounded-full z-10 shadow-sm tracking-wide">
-                -29%
+                -{Math.round((savings / product.originalPrice) * 100)}%
               </span>
               <button className="absolute top-6 right-6 bg-white shrink-0 h-10 w-10 rounded-full flex items-center justify-center shadow-sm text-gray-600 hover:text-gray-900 z-10 transition-colors">
                 <Search className="h-4 w-4" />
               </button>
               
               <img 
-                src={productHoney} 
-                alt="Raw Forest Honey" 
+                src={product.image || productHoney} 
+                alt={product.name} 
                 className="max-h-full max-w-full object-contain drop-shadow-[0_20px_40px_rgba(244,176,0,0.15)] transition-transform duration-500 group-hover:scale-105"
               />
             </div>
@@ -82,11 +114,13 @@ export default function ProductDetail() {
 
           {/* Center Column: Product Details (Col 4) */}
           <div className="lg:col-span-4 flex flex-col pt-2">
-            <span className="bg-[#FFF8E8] text-[#D88A00] text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full w-fit mb-4 border border-[#F4B000]/20 shadow-sm">
-              Bestseller
-            </span>
+            {product.badge && (
+              <span className="bg-[#FFF8E8] text-[#D88A00] text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full w-fit mb-4 border border-[#F4B000]/20 shadow-sm">
+                {product.badge}
+              </span>
+            )}
             <h1 className="text-4xl md:text-[42px] font-black leading-tight text-[#2B1D12] font-display">
-              Raw Forest Honey
+              {product.name}
             </h1>
             
             <div className="flex items-center gap-3 mt-4 text-sm border-b border-gray-100 pb-5">
@@ -97,20 +131,20 @@ export default function ProductDetail() {
                 <Star className="h-4 w-4 fill-current" />
                 <Star className="h-4 w-4 fill-current opacity-60" />
               </div>
-              <span className="font-bold">4.9 <span className="text-gray-500 font-medium">(2,156 Reviews)</span></span>
+              <span className="font-bold">{product.rating} <span className="text-gray-500 font-medium">({product.reviews || 0} Reviews)</span></span>
               <span className="text-gray-300">|</span>
               <span className="text-gray-500 font-medium tracking-wide">12K+ Sold</span>
             </div>
 
             <p className="mt-5 text-[15px] leading-relaxed text-gray-600 font-medium">
-              Unprocessed, unfiltered, and 100% pure honey sourced from wild forest beekeepers. Rich in nutrients, enzymes, and antioxidants.
+              {product.description}
             </p>
 
             <div className="mt-6 flex items-end gap-4">
-              <span className="text-4xl md:text-5xl font-black text-[#2B1D12]">₹499</span>
-              <span className="text-xl text-gray-400 line-through font-medium border-b border-transparent pb-1">₹699</span>
+              <span className="text-4xl md:text-5xl font-black text-[#2B1D12]">₹{product.price}</span>
+              <span className="text-xl text-gray-400 line-through font-medium border-b border-transparent pb-1">₹{product.originalPrice}</span>
               <span className="bg-[#FFF8E8] text-[#D88A00] text-xs font-bold px-3 py-1.5 rounded-full mb-1 border border-[#F4B000]/20">
-                Save ₹200 (29%)
+                Save ₹{savings} ({Math.round((savings / product.originalPrice) * 100)}%)
               </span>
             </div>
             <p className="text-xs text-gray-500 mt-2 tracking-wide">Inclusive of all taxes</p>
@@ -133,17 +167,17 @@ export default function ProductDetail() {
             <div className="mt-6 border-b border-gray-100 pb-7">
               <p className="text-sm font-bold text-[#2B1D12] mb-3">Choose Size</p>
               <div className="flex items-center gap-3">
-                {["250g", "500g", "1kg"].map(s => (
+                {product.sizes?.map(s => (
                   <button 
-                    key={s}
-                    onClick={() => setSize(s)}
+                    key={s.size_label}
+                    onClick={() => setSize(s.size_label)}
                     className={`px-6 py-3 rounded-xl border-2 text-sm font-bold transition-all ${
-                      size === s 
+                      size === s.size_label 
                         ? "border-[#F4B000] bg-[#FFF8E8] text-[#D88A00] shadow-[0_4px_12px_rgba(244,176,0,0.15)]" 
                         : "border-gray-200 text-gray-600 hover:border-gray-300 bg-white"
                     }`}
                   >
-                    {s}
+                    {s.size_label}
                   </button>
                 ))}
               </div>
@@ -164,14 +198,17 @@ export default function ProductDetail() {
 
              <div className="mt-7 flex flex-col gap-4">
               <div className="flex gap-4">
-                <button className="flex-1 bg-gradient-to-r from-[#F4B000] to-[#E59700] hover:from-[#E59700] hover:to-[#D48500] text-white rounded-xl h-14 flex items-center justify-center gap-2 font-bold text-[15px] tracking-wide transition-all shadow-[0_8px_20px_rgba(244,176,0,0.25)]">
+                <button onClick={() => addToCart(product.id, qty)} className="flex-1 bg-gradient-to-r from-[#F4B000] to-[#E59700] hover:from-[#E59700] hover:to-[#D48500] text-white rounded-xl h-14 flex items-center justify-center gap-2 font-bold text-[15px] tracking-wide transition-all shadow-[0_8px_20px_rgba(244,176,0,0.25)]">
                   <ShoppingCart className="h-5 w-5" /> Add to Cart
                 </button>
-                <button className="shrink-0 h-14 w-14 rounded-xl border-2 border-gray-200 flex items-center justify-center text-gray-500 hover:border-[#F4B000] hover:bg-[#FFF8E8] hover:text-[#F4B000] transition-all bg-white shadow-sm">
-                  <Heart className="h-6 w-6" />
+                <button onClick={() => toggleWishlist(product.id)} className="shrink-0 h-14 w-14 rounded-xl border-2 border-gray-200 flex items-center justify-center transition-all bg-white shadow-sm hover:border-gray-300">
+                  <Heart className={`h-6 w-6 transition-colors ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-500 hover:text-red-400"}`} />
                 </button>
               </div>
-              <button className="w-full h-14 rounded-xl border-2 border-[#F4B000] text-[#D88A00] hover:bg-[#F4B000] hover:text-white flex items-center justify-center gap-2 font-bold text-[15px] tracking-wide transition-all shadow-sm">
+              <button 
+                onClick={async () => { await addToCart(product.id, qty); navigate("/cart"); }}
+                className="w-full h-14 rounded-xl border-2 border-[#F4B000] text-[#D88A00] hover:bg-[#F4B000] hover:text-white flex items-center justify-center gap-2 font-bold text-[15px] tracking-wide transition-all shadow-sm"
+              >
                  <Zap className="h-5 w-5" fill="currentColor" /> Buy Now
               </button>
             </div>
@@ -281,7 +318,7 @@ export default function ProductDetail() {
         {/* Lower Section: Tabs and Details */}
         <div className="mt-24 pt-2">
            <div className="flex gap-10 overflow-x-auto no-scrollbar border-b border-gray-200">
-             {["Description", "Ingredients", "Nutritional Info", "Reviews (2,156)", "FAQs"].map(tab => (
+             {["Description", "Ingredients", "Nutritional Info", `Reviews (${product.reviews || 0})`, "FAQs"].map(tab => (
                <button 
                  key={tab} 
                  onClick={() => setActiveTab(tab)}
@@ -299,7 +336,7 @@ export default function ProductDetail() {
            <div className="py-14 lg:pr-[25%] animate-fade-up">
              <h2 className="text-3xl md:text-4xl font-black text-[#2B1D12] font-display">Pure. Raw. From the Forest.</h2>
              <p className="mt-6 text-[17px] text-gray-600 leading-relaxed font-medium">
-               Our Raw Forest Honey is collected from wild forests where bees naturally forage on a variety of flowers and herbs. It is minimally processed to retain all the natural goodness, enzymes, pollens, and antioxidants. It represents pure vitality in a jar, serving as a clean energy source for modern, active lifestyles while supporting local beekeeping communities.
+               {product.description}
              </p>
 
              <div className="mt-14 grid grid-cols-2 lg:grid-cols-4 gap-8">

@@ -11,32 +11,9 @@ import { AnnouncementBar, Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import productHoney from "@/assets/product_honey.png";
 
-const products = [
-  { id: 1, name: "Raw Forest Honey", description: "100% Pure & Unfiltered", rating: 4.9, reviews: 2156, price: 499, originalPrice: 699, badge: "Bestseller", discount: "-29%", image: productHoney, gradient: "from-amber-200 to-yellow-50", sizes: ["250g", "500g", "1kg"], type: "Raw Honey", benefit: "Immunity", category: "best-selling" },
-  { id: 2, name: "Turmeric Honey", description: "With Curcumin Goodness", rating: 4.8, reviews: 1843, price: 399, originalPrice: 549, badge: "Immunity", discount: "-27%", image: productHoney, gradient: "from-orange-200 to-yellow-50", sizes: ["250g", "500g", "1kg"], type: "Turmeric Honey", benefit: "Immunity", category: "best-selling" },
-  { id: 3, name: "Acacia Honey", description: "Naturally Sweet & Light", rating: 4.7, reviews: 1247, price: 449, originalPrice: 599, badge: "Premium", discount: "-25%", image: productHoney, gradient: "from-yellow-100 to-white", sizes: ["250g", "500g", "1kg"], type: "Acacia Honey", benefit: "Energy Boost", category: "new-arrivals" },
-  { id: 4, name: "Wild Forest Honey", description: "Rare. Raw. Real.", rating: 4.9, reviews: 3120, price: 599, originalPrice: 849, badge: "Bestseller", discount: "-29%", image: productHoney, gradient: "from-amber-300 to-amber-100", sizes: ["250g", "500g", "1kg"], type: "Wild Forest Honey", benefit: "Immunity", category: "best-selling" },
-  { id: 5, name: "Ginger Honey", description: "Soothes & Strengthens", rating: 4.6, reviews: 987, price: 349, originalPrice: 499, badge: "Popular", discount: "-30%", image: productHoney, gradient: "from-lime-100 to-yellow-50", sizes: ["250g", "500g", "1kg"], type: "Ginger Honey", benefit: "Digestion", category: "new-arrivals" },
-  { id: 6, name: "Honey Gift Pack", description: "Perfect for Gifting", rating: 4.8, reviews: 654, price: 999, originalPrice: 1299, badge: "Gift", discount: "-23%", image: productHoney, gradient: "from-rose-100 to-yellow-50", sizes: ["500g", "1kg"], type: "Gift Packs", benefit: "Immunity", category: "highest-rated" },
-  { id: 7, name: "Wellness Combo Pack", description: "Immunity + Energy", rating: 4.9, reviews: 2891, price: 1499, originalPrice: 1999, badge: "Bestseller", discount: "-25%", image: productHoney, gradient: "from-emerald-100 to-yellow-50", sizes: ["250g", "500g", "1kg"], type: "Wellness Combos", benefit: "Weight Management", category: "best-selling" },
-  { id: 8, name: "Kashmir Multiflora Honey", description: "Natural Daily Booster", rating: 4.7, reviews: 1432, price: 549, originalPrice: 749, badge: "Premium", discount: "-27%", image: productHoney, gradient: "from-blue-100 to-yellow-50", sizes: ["250g", "500g", "1kg"], type: "Raw Honey", benefit: "Energy Boost", category: "new-arrivals" },
-  { id: 9, name: "Organic Honey", description: "Certified Organic Pure", rating: 4.8, reviews: 1105, price: 649, originalPrice: 849, badge: "Organic", discount: "-24%", image: productHoney, gradient: "from-green-100 to-white", sizes: ["250g", "500g", "1kg"], type: "Organic Honey", benefit: "Skin Health", category: "highest-rated" },
-  { id: 10, name: "Manuka Style Honey", description: "High MGO Active", rating: 4.9, reviews: 876, price: 899, originalPrice: 1199, badge: "Premium", discount: "-25%", image: productHoney, gradient: "from-amber-100 to-yellow-50", sizes: ["250g", "500g"], type: "Raw Honey", benefit: "Immunity", category: "highest-rated" },
-  { id: 11, name: "Sidr Honey", description: "Rare Premium Honey", rating: 4.8, reviews: 543, price: 1299, originalPrice: 1699, badge: "Luxury", discount: "-24%", image: productHoney, gradient: "from-orange-100 to-amber-50", sizes: ["250g", "500g"], type: "Wild Forest Honey", benefit: "Energy Boost", category: "price-high-low" },
-  { id: 12, name: "Eucalyptus Honey", description: "Strong & Distinct", rating: 4.6, reviews: 432, price: 399, originalPrice: 549, badge: "Popular", discount: "-27%", image: productHoney, gradient: "from-teal-100 to-white", sizes: ["250g", "500g", "1kg"], type: "Raw Honey", benefit: "Digestion", category: "price-low-high" },
-  { id: 13, name: "Litchi Honey", description: "Premium Floral Honey", rating: 4.7, reviews: 765, price: 449, originalPrice: 599, badge: "Popular", discount: "-25%", image: productHoney, gradient: "from-pink-100 to-yellow-50", sizes: ["250g", "500g", "1kg"], type: "Raw Honey", benefit: "Skin Health", category: "new-arrivals" },
-  { id: 14, name: "Coffee Blended Honey", description: "Energy & Focus", rating: 4.5, reviews: 321, price: 449, originalPrice: 599, badge: "New", discount: "-25%", image: productHoney, gradient: "from-stone-100 to-amber-50", sizes: ["250g", "500g"], type: "Wellness Combos", benefit: "Energy Boost", category: "new-arrivals" },
-  { id: 15, name: "Berry Infused Honey", description: "Antioxidant Rich", rating: 4.7, reviews: 654, price: 499, originalPrice: 649, badge: "Popular", discount: "-23%", image: productHoney, gradient: "from-purple-100 to-yellow-50", sizes: ["250g", "500g", "1kg"], type: "Organic Honey", benefit: "Skin Health", category: "highest-rated" },
-  { id: 16, name: "Propolis Honey Mix", description: "Immunity Shield", rating: 4.8, reviews: 543, price: 699, originalPrice: 899, badge: "Bestseller", discount: "-22%", image: productHoney, gradient: "from-red-100 to-amber-50", sizes: ["250g", "500g"], type: "Wellness Combos", benefit: "Immunity", category: "best-selling" },
-  { id: 17, name: "Cinnamon Honey Blend", description: "Metabolism Booster", rating: 4.6, reviews: 432, price: 379, originalPrice: 499, badge: "Popular", discount: "-24%", image: productHoney, gradient: "from-rose-100 to-yellow-100", sizes: ["250g", "500g", "1kg"], type: "Ginger Honey", benefit: "Weight Management", category: "price-low-high" },
-  { id: 18, name: "Royal Jelly Honey", description: "Premium Wellness", rating: 4.9, reviews: 287, price: 899, originalPrice: 1199, badge: "Luxury", discount: "-25%", image: productHoney, gradient: "from-yellow-100 to-white", sizes: ["250g", "500g"], type: "Gift Packs", benefit: "Energy Boost", category: "price-high-low" },
-  { id: 19, name: "Honey & Lemon Combo", description: "Daily Wellness Duo", rating: 4.5, reviews: 876, price: 299, originalPrice: 399, badge: "Value", discount: "-25%", image: productHoney, gradient: "from-lime-100 to-white", sizes: ["250g", "500g"], type: "Wellness Combos", benefit: "Digestion", category: "price-low-high" },
-  { id: 20, name: "Pure Forest Honey 1kg", description: "Family Size Pack", rating: 4.8, reviews: 1543, price: 799, originalPrice: 1099, badge: "Value", discount: "-27%", image: productHoney, gradient: "from-amber-200 to-yellow-100", sizes: ["500g", "1kg"], type: "Raw Honey", benefit: "Immunity", category: "best-selling" },
-  { id: 21, name: "Honey & Almond Mix", description: "Brain & Energy Boost", rating: 4.7, reviews: 543, price: 599, originalPrice: 799, badge: "New", discount: "-25%", image: productHoney, gradient: "from-stone-100 to-amber-50", sizes: ["250g", "500g"], type: "Gift Packs", benefit: "Energy Boost", category: "new-arrivals" },
-  { id: 22, name: "Tulsi Honey Blend", description: "Ayurvedic Wellness", rating: 4.8, reviews: 765, price: 449, originalPrice: 599, badge: "Immunity", discount: "-25%", image: productHoney, gradient: "from-green-100 to-yellow-50", sizes: ["250g", "500g", "1kg"], type: "Turmeric Honey", benefit: "Immunity", category: "highest-rated" },
-  { id: 23, name: "Pure Acacia Honey 500g", description: "Light & Delicate", rating: 4.7, reviews: 987, price: 399, originalPrice: 549, badge: "Premium", discount: "-27%", image: productHoney, gradient: "from-yellow-50 to-white", sizes: ["250g", "500g"], type: "Acacia Honey", benefit: "Digestion", category: "price-low-high" },
-  { id: 24, name: "Honeycomb Gift Pack", description: "Premium Gifting Hamper", rating: 4.9, reviews: 234, price: 1999, originalPrice: 2499, badge: "Luxury", discount: "-20%", image: productHoney, gradient: "from-amber-100 to-orange-50", sizes: ["500g", "1kg"], type: "Gift Packs", benefit: "Immunity", category: "price-high-low" },
-];
+import { getProducts } from "@/services/api";
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 const productTypes = ["Raw Honey", "Wild Forest Honey", "Organic Honey", "Turmeric Honey", "Acacia Honey", "Ginger Honey", "Gift Packs", "Wellness Combos"];
 const healthBenefits = ["Immunity", "Energy Boost", "Digestion", "Skin Health", "Weight Management"];
@@ -133,11 +110,11 @@ function FilterSidebar({ filters, setFilters, filteredProducts }) {
     setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating }));
   };
 
-  const countByType = (type) => products.filter(p => p.type === type).length;
-  const countByBenefit = (benefit) => products.filter(p => p.benefit === benefit).length;
-  const countByPrice = (range) => products.filter(p => p.price >= range.min && p.price <= range.max).length;
-  const countBySize = (size) => products.filter(p => p.sizes.includes(size)).length;
-  const countByRating = (min) => products.filter(p => p.rating >= min).length;
+  const countByType = (type) => filteredProducts.filter(p => p.type === type).length;
+  const countByBenefit = (benefit) => filteredProducts.filter(p => p.benefit === benefit).length;
+  const countByPrice = (range) => filteredProducts.filter(p => p.price >= range.min && p.price <= range.max).length;
+  const countBySize = (size) => filteredProducts.filter(p => p.sizes && p.sizes.includes(size)).length;
+  const countByRating = (min) => filteredProducts.filter(p => p.rating >= min).length;
 
   return (
     <div className="rounded-2xl border border-border/60 bg-white p-6 shadow-card">
@@ -202,11 +179,13 @@ function FilterSidebar({ filters, setFilters, filteredProducts }) {
 }
 
 function ProductCard({ product, index }) {
-  const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || "");
   const [isHovered, setIsHovered] = useState(false);
+  const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const savings = product.originalPrice - product.price;
+  const isWishlisted = isInWishlist(product.id);
 
   return (
     <motion.article
@@ -230,17 +209,17 @@ function ProductCard({ product, index }) {
 
         {/* Wishlist */}
         <button
-          onClick={(e) => { e.preventDefault(); setIsWishlisted(!isWishlisted); }}
+          onClick={(e) => { e.preventDefault(); toggleWishlist(product.id); }}
           className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm shadow-sm transition-all hover:bg-white hover:shadow-md"
         >
           <Heart className={`h-4.5 w-4.5 transition-all ${isWishlisted ? "fill-red-500 text-red-500 scale-110" : "text-gray-500"}`} />
         </button>
 
         {/* Product Image */}
-        <div className={`relative flex aspect-[4/5] items-center justify-center bg-gradient-to-b ${product.gradient} p-6 overflow-hidden`}>
+        <div className={`relative flex aspect-[4/5] items-center justify-center bg-gradient-to-br ${product.gradient} p-6 overflow-hidden`}>
           <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent pointer-events-none" />
           <img
-            src={product.image}
+            src={product.image || productHoney}
             alt={product.name}
             className={`max-h-full max-w-full object-contain drop-shadow-[0_15px_30px_rgba(244,176,0,0.12)] transition-all duration-500 ${isHovered ? "scale-110" : "scale-100"}`}
           />
@@ -263,7 +242,7 @@ function ProductCard({ product, index }) {
         {/* Rating */}
         <div className="mt-2.5 flex items-center gap-2">
           <StarRating rating={product.rating} />
-          <span className="text-xs font-semibold text-foreground/70">{product.rating} <span className="text-muted-foreground font-medium">({product.reviews.toLocaleString()})</span></span>
+          <span className="text-xs font-semibold text-foreground/70">{product.rating} <span className="text-muted-foreground font-medium">({product.reviews || 0})</span></span>
         </div>
 
         {/* Pricing */}
@@ -275,23 +254,23 @@ function ProductCard({ product, index }) {
 
         {/* Size Options */}
         <div className="mt-3.5 flex items-center gap-2">
-          {product.sizes.map(s => (
+          {product.sizes?.map(s => (
             <button
-              key={s}
-              onClick={() => setSelectedSize(s)}
+              key={s.size_label}
+              onClick={() => setSelectedSize(s.size_label)}
               className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${
-                selectedSize === s
+                selectedSize === s.size_label
                   ? "border-accent bg-accent/10 text-accent"
                   : "border-gray-200 text-muted-foreground hover:border-gray-300"
               }`}
             >
-              {s}
+              {s.size_label}
             </button>
           ))}
         </div>
 
         {/* Add to Cart */}
-        <button className="mt-4 flex w-full items-center justify-center gap-2.5 rounded-xl bg-foreground py-3 text-xs font-bold tracking-wider text-white transition-all hover:bg-accent hover:shadow-[0_6px_16px_rgba(244,176,0,0.25)] active:scale-[0.98]">
+        <button onClick={() => addToCart(product.id, 1)} className="mt-4 flex w-full items-center justify-center gap-2.5 rounded-xl bg-foreground py-3 text-xs font-bold tracking-wider text-white transition-all hover:bg-accent hover:shadow-[0_6px_16px_rgba(244,176,0,0.25)] active:scale-[0.98]">
           <ShoppingCart className="h-4 w-4" /> ADD TO CART
         </button>
       </div>
@@ -331,9 +310,25 @@ function TrustSection() {
 }
 
 function Shop() {
+  const [products, setProducts] = useState([]);
   const [filters, setFilters] = useState({ types: [], benefits: [], priceRanges: [], sizes: [], rating: 0 });
   const [sortBy, setSortBy] = useState("best-selling");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        const data = await getProducts();
+        setProducts(data.products);
+      } catch (error) {
+        console.error("Failed to load products:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProducts();
+  }, []);
 
   const filteredProducts = products.filter(p => {
     if (filters.types.length && !filters.types.includes(p.type)) return false;
@@ -345,7 +340,7 @@ function Shop() {
       });
       if (!matched) return false;
     }
-    if (filters.sizes.length && !filters.sizes.some(s => p.sizes.includes(s))) return false;
+    if (filters.sizes.length && !filters.sizes.some(s => p.sizes?.some(ps => ps.size_label === s))) return false;
     if (filters.rating && p.rating < filters.rating) return false;
     return true;
   });

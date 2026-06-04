@@ -16,7 +16,9 @@ import {
   UserRound,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
+import { useAuth } from "@/context/AuthContext";
 import honeyPanel from "@/assets/auth-honey-panel.png";
 import logo from "@/assets/logo.png";
 
@@ -264,22 +266,26 @@ function InputField({
   type = "text",
   placeholder,
   autoComplete,
-  isPassword = false,
-  showValue = false,
+  isPassword,
+  showValue,
   onToggle,
+  value,
+  onChange,
   index,
 }) {
   return (
-    <motion.label custom={index} variants={fieldVariants} className="block">
-      <span className="sr-only">{placeholder}</span>
-      <span className="relative block">
-        <Icon className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[#858B9B]" />
-        <input
-          type={isPassword && showValue ? "text" : type}
-          placeholder={placeholder}
-          autoComplete={autoComplete}
-          className="h-16 w-full min-w-0 rounded-2xl border border-[#DDD8CF] bg-white/80 px-14 text-[15px] font-medium text-[#2B1D12] shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_12px_35px_rgba(43,29,18,0.04)] outline-none transition-all duration-300 placeholder:text-[#8B90A0] focus:border-[#F4B000] focus:bg-white focus:ring-4 focus:ring-[#F4B000]/20"
-        />
+    <motion.div variants={fieldVariants} custom={index} className="relative group">
+      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-[#8C93A3] transition-colors group-focus-within:text-[#F4B000]">
+        <Icon className="h-5 w-5" />
+      </div>
+      <input
+        type={isPassword && !showValue ? "password" : type}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        value={value}
+        onChange={onChange}
+        className="h-14 w-full rounded-[18px] border-2 border-[#E9E3D6] bg-[#FAFAFA] pl-[46px] pr-12 text-[15px] font-bold text-[#111827] shadow-sm outline-none transition-all placeholder:text-[#9DA3B0] placeholder:font-medium hover:border-[#D6CFBF] focus:border-[#F4B000] focus:bg-white focus:shadow-[0_4px_16px_rgba(244,176,0,0.12)]"
+      />
         {isPassword && (
           <button
             type="button"
@@ -290,16 +296,16 @@ function InputField({
             {showValue ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
         )}
-      </span>
-    </motion.label>
+    </motion.div>
   );
 }
 
-function GradientButton({ children }) {
+function GradientButton({ children, disabled }) {
   return (
     <motion.button
       variants={fieldVariants}
       type="submit"
+      disabled={disabled}
       whileHover={{ y: -1 }}
       whileTap={{ scale: 0.985 }}
       className="h-16 w-full min-w-0 rounded-2xl bg-gradient-to-r from-[#EFA300] via-[#F4B000] to-[#FFC83D] px-5 text-base font-extrabold text-white shadow-[0_22px_44px_rgba(244,176,0,0.32)] transition duration-300 hover:shadow-[0_26px_52px_rgba(244,176,0,0.40)]"
@@ -336,6 +342,25 @@ function GoogleButton() {
 
 function LoginForm({ setMode }) {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    setIsSubmitting(true);
+    try {
+      await login(email, password);
+      navigate("/");
+    } catch (error) {
+      // toast is handled in context
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <motion.form
@@ -346,7 +371,7 @@ function LoginForm({ setMode }) {
       animate="center"
       exit="exit"
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-      onSubmit={(event) => event.preventDefault()}
+      onSubmit={handleSubmit}
       className="mt-8"
     >
       <motion.div initial="hidden" animate="show" className="grid gap-5">
@@ -355,6 +380,8 @@ function LoginForm({ setMode }) {
           type="email"
           placeholder="Enter your email"
           autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           index={0}
         />
         <InputField
@@ -365,6 +392,8 @@ function LoginForm({ setMode }) {
           isPassword
           showValue={showPassword}
           onToggle={() => setShowPassword((value) => !value)}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           index={1}
         />
 
@@ -377,7 +406,9 @@ function LoginForm({ setMode }) {
           </button>
         </motion.div>
 
-        <GradientButton>Login</GradientButton>
+        <GradientButton disabled={isSubmitting}>
+          {isSubmitting ? "Logging in..." : "Login"}
+        </GradientButton>
         <Divider />
         <GoogleButton />
 
@@ -403,6 +434,27 @@ function LoginForm({ setMode }) {
 function SignupForm({ setMode }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { register } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!name || !email || !password || !confirmPassword) return;
+    setIsSubmitting(true);
+    try {
+      await register(name, email, password, confirmPassword);
+      navigate("/");
+    } catch (error) {
+      // toast is handled in context
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <motion.form
@@ -413,7 +465,7 @@ function SignupForm({ setMode }) {
       animate="center"
       exit="exit"
       transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-      onSubmit={(event) => event.preventDefault()}
+      onSubmit={handleSubmit}
       className="mt-7"
     >
       <motion.div initial="hidden" animate="show" className="grid gap-4">
@@ -421,6 +473,8 @@ function SignupForm({ setMode }) {
           icon={UserRound}
           placeholder="Full Name"
           autoComplete="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           index={0}
         />
         <InputField
@@ -428,6 +482,8 @@ function SignupForm({ setMode }) {
           type="email"
           placeholder="Email"
           autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           index={1}
         />
         <InputField
@@ -438,6 +494,8 @@ function SignupForm({ setMode }) {
           isPassword
           showValue={showPassword}
           onToggle={() => setShowPassword((value) => !value)}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           index={2}
         />
         <InputField
@@ -448,10 +506,14 @@ function SignupForm({ setMode }) {
           isPassword
           showValue={showConfirm}
           onToggle={() => setShowConfirm((value) => !value)}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
           index={3}
         />
 
-        <GradientButton>Create Account</GradientButton>
+        <GradientButton disabled={isSubmitting}>
+          {isSubmitting ? "Creating..." : "Create Account"}
+        </GradientButton>
         <Divider />
         <GoogleButton />
 
