@@ -1,10 +1,42 @@
-const products = [
-  { id: 1, name: 'CITRUS BURST', tag: 'Super Electrolytes', rating: 4.8, reviews: 120, price: 149 },
-  { id: 2, name: 'BERRY BLITZ', tag: 'Extra Electrolytes', rating: 4.8, reviews: 98, price: 149 },
-  { id: 3, name: 'TROPICAL TIDE', tag: 'Super Electrolytes', rating: 4.9, reviews: 110, price: 149 },
-  { id: 4, name: 'MELON MIST', tag: 'Super Electrolytes', rating: 4.7, reviews: 89, price: 149 },
-];
+import { findAllProducts, findProductById, findBestsellers } from '../models/Product.js';
 
-export function getProducts(req, res) {
+/**
+ * GET /api/products
+ * Supports query params: type, benefit, priceMin, priceMax, size, rating, sort, page, limit
+ */
+export async function getProducts(req, res) {
+  const filters = {
+    type: req.query.type,
+    benefit: req.query.benefit,
+    priceMin: req.query.priceMin,
+    priceMax: req.query.priceMax,
+    size: req.query.size,
+    rating: req.query.rating,
+    sort: req.query.sort,
+    page: req.query.page || 1,
+    limit: req.query.limit || 24,
+  };
+
+  const result = await findAllProducts(filters);
+  res.json(result);
+}
+
+/**
+ * GET /api/products/bestsellers
+ */
+export async function getBestsellers(req, res) {
+  const limit = req.query.limit || 8;
+  const products = await findBestsellers(limit);
   res.json({ products });
+}
+
+/**
+ * GET /api/products/:id
+ */
+export async function getProductById(req, res) {
+  const product = await findProductById(req.params.id);
+  if (!product) {
+    return res.status(404).json({ error: 'Product not found.' });
+  }
+  res.json({ product });
 }

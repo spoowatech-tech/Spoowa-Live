@@ -8,63 +8,34 @@ import {
 import { AnnouncementBar, Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
-const products = [
-  {
-    id: 1,
-    name: "Raw Honey",
-    description: "Pure, unprocessed wild honey harvested directly from the comb.",
-    weight: "500g",
-    mrp: 599,
-    price: 249,
-    gradient: "from-amber-200 to-yellow-100",
-    badge: "Bestseller",
-  },
-  {
-    id: 2,
-    name: "Honey with Turmeric",
-    description: "Golden honey blended with premium turmeric for immunity support.",
-    weight: "250g",
-    mrp: 399,
-    price: 149,
-    gradient: "from-orange-200 to-yellow-50",
-    badge: "Immunity",
-  },
-  {
-    id: 3,
-    name: "Wild Forest Honey",
-    description: "Rare forest honey with rich, complex flavor notes from deep jungles.",
-    weight: "500g",
-    mrp: 500,
-    price: 181.30,
-    gradient: "from-amber-300 to-amber-100",
-    badge: "Premium",
-  },
-];
+import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
+import { useAuth } from "@/context/AuthContext";
+import productHoney from "@/assets/product_honey.png";
 
-const allSelected = products.map((p) => p.id);
-
-function QuantitySelector() {
-  const [qty, setQty] = useState(1);
+function QuantitySelector({ qty, onUpdate }) {
   return (
     <div className="inline-flex items-center rounded-lg border border-gray-200 bg-white">
-      <button onClick={() => setQty(Math.max(1, qty - 1))} className="flex h-8 w-8 items-center justify-center text-gray-500 transition-colors hover:text-[#F4B000]">
+      <button onClick={() => onUpdate(Math.max(1, qty - 1))} className="flex h-8 w-8 items-center justify-center text-gray-500 transition-colors hover:text-[#F4B000]">
         <Minus className="h-3.5 w-3.5" />
       </button>
       <span className="flex h-8 w-10 items-center justify-center text-sm font-semibold text-gray-900 tabular-nums">
         {qty}
       </span>
-      <button onClick={() => setQty(qty + 1)} className="flex h-8 w-8 items-center justify-center text-gray-500 transition-colors hover:text-[#F4B000]">
+      <button onClick={() => onUpdate(qty + 1)} className="flex h-8 w-8 items-center justify-center text-gray-500 transition-colors hover:text-[#F4B000]">
         <Plus className="h-3.5 w-3.5" />
       </button>
     </div>
   );
 }
 
-function CartItem({ product, selected, onToggleSelect }) {
+function CartItem({ item, selected, onToggleSelect, onUpdateQuantity, onRemove }) {
+  const product = item.product || {};
+  
   return (
     <div className="group flex items-start gap-4 rounded-2xl border border-gray-100 bg-white p-4 transition-all duration-200 hover:border-gray-200 hover:shadow-[0_2px_16px_rgba(0,0,0,0.04)] sm:gap-5 sm:p-5">
       <button
-        onClick={() => onToggleSelect(product.id)}
+        onClick={() => onToggleSelect(item.product_id)}
         className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200 ${
           selected
             ? "border-[#F4B000] bg-[#F4B000] text-white"
@@ -74,34 +45,34 @@ function CartItem({ product, selected, onToggleSelect }) {
         {selected && <Check className="h-3 w-3 stroke-[3]" />}
       </button>
 
-      <div className={`flex h-[88px] w-[88px] shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${product.gradient} sm:h-[100px] sm:w-[100px]`}>
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/60 backdrop-blur-sm">
-          <span className="text-lg">🍯</span>
-        </div>
+      <div className={`relative flex h-[88px] w-[88px] shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${product.gradient || 'from-amber-200 to-yellow-100'} sm:h-[100px] sm:w-[100px]`}>
+        <img src={product.image || productHoney} alt={product.name} className="h-[80%] object-contain" />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="truncate text-base font-bold text-[#2B1D12]">{product.name}</h3>
-              <span className="shrink-0 rounded-full bg-[#FFF8E8] px-2 py-0.5 text-[10px] font-semibold text-[#B87A00]">{product.badge}</span>
+              <Link to={`/product/${product.id}`} className="truncate text-base font-bold text-[#2B1D12] hover:text-[#D88A00] transition-colors">{product.name}</Link>
+              {product.badge && <span className="shrink-0 rounded-full bg-[#FFF8E8] px-2 py-0.5 text-[10px] font-semibold text-[#B87A00]">{product.badge}</span>}
             </div>
             <p className="mt-0.5 text-sm text-gray-500 line-clamp-1">{product.description}</p>
           </div>
-          <button className="shrink-0 rounded-full p-1.5 text-gray-300 opacity-0 transition-all duration-200 hover:bg-red-50 hover:text-red-500 group-hover:opacity-100">
+          <button onClick={() => onRemove(item.product_id)} className="shrink-0 rounded-full p-1.5 text-gray-300 opacity-100 transition-all duration-200 hover:bg-red-50 hover:text-red-500 group-hover:opacity-100">
             <X className="h-4 w-4" />
           </button>
         </div>
 
         <div className="mt-auto flex flex-wrap items-end justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="rounded-md bg-gray-50 px-2.5 py-1 text-[11px] font-semibold text-gray-500">{product.weight}</span>
-            <QuantitySelector />
+            {product.sizes && product.sizes.length > 0 && (
+              <span className="rounded-md bg-gray-50 px-2.5 py-1 text-[11px] font-semibold text-gray-500">{product.sizes[0].size_label}</span>
+            )}
+            <QuantitySelector qty={item.quantity} onUpdate={(q) => onUpdateQuantity(item.product_id, q)} />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-[#2B1D12]">₹{product.price.toFixed(2)}</span>
-            <span className="text-sm text-gray-400 line-through">₹{product.mrp}</span>
+            <span className="text-lg font-bold text-[#2B1D12]">₹{product.price}</span>
+            <span className="text-sm text-gray-400 line-through">₹{product.originalPrice}</span>
           </div>
         </div>
       </div>
@@ -110,11 +81,18 @@ function CartItem({ product, selected, onToggleSelect }) {
 }
 
 function Cart() {
-  const [selected, setSelected] = useState([...allSelected]);
-  const [couponApplied, setCouponApplied] = useState(true);
-  const [couponInput, setCouponInput] = useState("SPOOWA10");
+  const { user } = useAuth();
+  const { items, summary, updateQuantity, remove, applyCoupon, removeCoupon, coupon, placeOrder, loading } = useCart();
+  const [selected, setSelected] = useState([]);
+  const [couponInput, setCouponInput] = useState("");
+  const { toggleWishlist } = useWishlist();
 
-  const allSelected_ = selected.length === products.length;
+  // Keep selected items in sync with items
+  if (items.length > 0 && selected.length === 0) {
+     setSelected(items.map(i => i.product_id));
+  }
+
+  const allSelected_ = items.length > 0 && selected.length === items.length;
 
   const toggleSelect = (id) => {
     setSelected((prev) =>
@@ -123,17 +101,31 @@ function Cart() {
   };
 
   const toggleSelectAll = () => {
-    setSelected(allSelected_.length > 0 ? [] : [...allSelected]);
+    setSelected(allSelected_ ? [] : items.map(i => i.product_id));
   };
 
-  const totalMrp = products.reduce((sum, p) => sum + p.mrp, 0);
-  const totalPrice = products.reduce((sum, p) => sum + p.price, 0);
-  const discount = totalMrp - totalPrice;
-  const couponDiscount = 57.93;
-  const subtotal = totalPrice - couponDiscount;
-  const shipping = 49;
-  const total = subtotal + shipping;
-  const totalSaved = discount + couponDiscount;
+  const handleApplyCoupon = async () => {
+     if (couponInput) {
+       await applyCoupon(couponInput);
+     }
+  };
+
+  const totalSaved = summary.discount + (coupon?.discountAmount || 0);
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#FFFDF7] font-body flex flex-col">
+        <AnnouncementBar />
+        <Navbar />
+        <main className="flex-1 flex flex-col items-center justify-center p-8">
+          <ShoppingBag className="h-16 w-16 text-gray-300 mb-4" />
+          <h2 className="text-2xl font-bold text-[#2B1D12]">Please log in to view cart</h2>
+          <Link to="/auth" className="mt-4 rounded-xl bg-[#F4B000] px-6 py-3 font-bold text-white shadow-sm">Login</Link>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FFFDF7] font-body">
@@ -184,14 +176,14 @@ function Cart() {
                 }`}>
                   {allSelected_ && <Check className="h-3 w-3 stroke-[3]" />}
                 </div>
-                {selected.length}/{products.length} Items Selected
+                {selected.length}/{items.length} Items Selected
               </button>
               <div className="flex items-center gap-3">
-                <button className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-500 transition-all hover:bg-red-50 hover:text-red-600">
+                <button onClick={() => selected.forEach(id => remove(id))} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-500 transition-all hover:bg-red-50 hover:text-red-600">
                   <Trash2 className="h-3.5 w-3.5" />
                   Remove
                 </button>
-                <button className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-500 transition-all hover:bg-pink-50 hover:text-pink-600">
+                <button onClick={() => selected.forEach(id => toggleWishlist(id))} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-500 transition-all hover:bg-pink-50 hover:text-pink-600">
                   <Heart className="h-3.5 w-3.5" />
                   Wishlist
                 </button>
@@ -200,14 +192,22 @@ function Cart() {
 
             {/* Product list */}
             <div className="flex flex-col gap-3">
-              {products.map((product) => (
-                <CartItem
-                  key={product.id}
-                  product={product}
-                  selected={selected.includes(product.id)}
-                  onToggleSelect={toggleSelect}
-                />
-              ))}
+              {items.length === 0 ? (
+                <div className="py-10 text-center">
+                  <p className="text-gray-500 font-medium">Your cart is empty.</p>
+                </div>
+              ) : (
+                items.map((item) => (
+                  <CartItem
+                    key={item.product_id}
+                    item={item}
+                    selected={selected.includes(item.product_id)}
+                    onToggleSelect={toggleSelect}
+                    onUpdateQuantity={updateQuantity}
+                    onRemove={remove}
+                  />
+                ))
+              )}
             </div>
 
             {/* Free shipping banner */}
@@ -246,20 +246,20 @@ function Cart() {
                     className="flex-1 rounded-xl border border-gray-200 bg-gray-50/50 px-3.5 py-2.5 text-sm font-medium text-gray-900 uppercase placeholder:text-gray-400 placeholder:normal-case transition-all focus:border-[#F4B000] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F4B000]/20"
                   />
                   <button
-                    onClick={() => setCouponApplied(true)}
+                    onClick={handleApplyCoupon}
                     className="rounded-xl bg-[#F4B000] px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-[#DCA000]"
                   >
                     Apply
                   </button>
                 </div>
-                {couponApplied && (
+                {coupon && (
                   <div className="mt-3 flex items-center justify-between rounded-xl bg-green-50 px-3.5 py-2.5">
                     <div className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-green-600" />
-                      <span className="text-xs font-semibold text-green-700">Coupon Applied: SPOOWA10</span>
+                      <span className="text-xs font-semibold text-green-700">Coupon Applied: {coupon.code}</span>
                     </div>
                     <button
-                      onClick={() => { setCouponApplied(false); setCouponInput(""); }}
+                      onClick={removeCoupon}
                       className="text-xs font-semibold text-red-500 transition-colors hover:text-red-700"
                     >
                       Remove
@@ -271,20 +271,22 @@ function Cart() {
               {/* Price Details */}
               <div className="rounded-[20px] border border-gray-100 bg-white p-5 shadow-[0_2px_16px_rgba(0,0,0,0.04)]">
                 <h3 className="text-sm font-bold text-[#2B1D12]">
-                  Price Details ({selected.length}/{products.length} items)
+                  Price Details ({items.length} items)
                 </h3>
                 <div className="mt-4 space-y-3">
-                  <Row label="Total MRP" value={`₹${totalMrp.toFixed(2)}`} />
-                  <Row label="Discount on MRP" value={`-₹${discount.toFixed(2)}`} valueClass="text-green-600" />
-                  <Row label="Coupon Discount" value={`-₹${couponDiscount.toFixed(2)}`} valueClass="text-green-600" />
+                  <Row label="Total MRP" value={`₹${summary.totalMrp.toFixed(2)}`} />
+                  <Row label="Discount on MRP" value={`-₹${summary.discount.toFixed(2)}`} valueClass="text-green-600" />
+                  {coupon && (
+                    <Row label="Coupon Discount" value={`-₹${coupon.discountAmount.toFixed(2)}`} valueClass="text-green-600" />
+                  )}
                   <div className="border-t border-gray-100 pt-3">
-                    <Row label="Subtotal" value={`₹${subtotal.toFixed(2)}`} bold />
+                    <Row label="Subtotal" value={`₹${summary.subtotal.toFixed(2)}`} bold />
                   </div>
-                  <Row label="Shipping" value={selected.length > 0 ? "FREE" : `₹${shipping.toFixed(2)}`} valueClass={selected.length > 0 ? "text-green-600 font-semibold" : ""} />
+                  <Row label="Shipping" value={summary.shipping === 0 ? "FREE" : `₹${summary.shipping.toFixed(2)}`} valueClass={summary.shipping === 0 ? "text-green-600 font-semibold" : ""} />
                   <div className="border-t-2 border-gray-100 pt-3">
                     <div className="flex items-center justify-between">
                       <span className="text-base font-bold text-[#2B1D12]">Total Amount</span>
-                      <span className="text-xl font-bold text-[#F4B000]">₹{total.toFixed(2)}</span>
+                      <span className="text-xl font-bold text-[#F4B000]">₹{summary.finalTotal.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -296,9 +298,9 @@ function Cart() {
                   </div>
                 </div>
 
-                <button className="mt-4 flex w-full items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-[#F4B000] to-[#FFC83D] px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-[#F4B000]/25 transition-all duration-300 hover:from-[#E0A000] hover:to-[#F0B800] active:scale-[0.98]">
+                <button disabled={loading || items.length === 0} onClick={() => placeOrder()} className="mt-4 flex w-full items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-[#F4B000] to-[#FFC83D] px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-[#F4B000]/25 transition-all duration-300 hover:from-[#E0A000] hover:to-[#F0B800] active:scale-[0.98] disabled:opacity-50">
                   <Lock className="h-4 w-4" />
-                  Place Order
+                  {loading ? "Processing..." : "Place Order (COD)"}
                 </button>
 
                 <p className="mt-3 text-center text-[10px] leading-relaxed text-gray-400">

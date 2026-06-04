@@ -1,8 +1,29 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import toast from "react-hot-toast";
 import logo from "@/assets/logo.png";
 import logoSpefl from "@/assets/logo_spefl.png";
+import { subscribeNewsletter } from "@/services/api";
 
 export function Footer() {
+  const [email, setEmail] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    setSubscribing(true);
+    try {
+      const res = await subscribeNewsletter(email);
+      toast.success(res.message || "Subscribed successfully!");
+      setEmail("");
+    } catch (error) {
+      toast.error(error.message || "Subscription failed");
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
   return (
     <footer className="mt-20 bg-foreground text-background">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -75,9 +96,11 @@ export function Footer() {
           <div className="lg:col-span-3">
             <p className="text-xs font-bold tracking-[0.18em] text-background/60">STAY HYDRATED</p>
             <p className="mt-4 text-sm text-background/75">Get launch updates & deals.</p>
-            <form onSubmit={(e) => e.preventDefault()} className="mt-3 flex overflow-hidden rounded-full border border-background/20">
-              <input placeholder="Email" required type="email" className="flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-background/50 outline-none" />
-              <button type="submit" className="bg-accent px-4 text-xs font-bold text-white hover:bg-accent/80 transition-colors">JOIN</button>
+            <form onSubmit={handleSubscribe} className="mt-3 flex overflow-hidden rounded-full border border-background/20">
+              <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" required type="email" className="flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-background/50 outline-none" />
+              <button disabled={subscribing} type="submit" className="bg-accent px-4 text-xs font-bold text-white hover:bg-accent/80 transition-colors">
+                {subscribing ? "WAIT..." : "JOIN"}
+              </button>
             </form>
           </div>
         </div>
