@@ -15,6 +15,17 @@ export function getServerConfig() {
 
     // JWT
     jwtSecret: process.env.JWT_SECRET || 'spoowa_fallback_secret',
-    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '15m',
+    jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || 'spoowa_refresh_fallback_secret',
+    jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+
+    // Google OAuth
+    googleClientId: process.env.GOOGLE_CLIENT_ID,
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+
+    // Twilio
+    twilioAccountSid: process.env.TWILIO_ACCOUNT_SID,
+    twilioAuthToken: process.env.TWILIO_AUTH_TOKEN,
+    twilioPhoneNumber: process.env.TWILIO_PHONE_NUMBER,
   };
 }

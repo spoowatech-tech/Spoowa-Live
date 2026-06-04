@@ -3,6 +3,7 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { apiRouter } from './routes/api.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { testConnection } from './config/db.js';
@@ -13,8 +14,12 @@ const config = getServerConfig();
 const PORT = config.port;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // Vite default port
+  credentials: true
+}));
 app.use(express.json());
+app.use(cookieParser());
 
 // API Routes
 app.use('/api', apiRouter);
