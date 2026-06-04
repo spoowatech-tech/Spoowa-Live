@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { getProfile, loginUser, registerUser, logoutUser, isLoggedIn } from '../services/api';
+import { getProfile, loginUser, signupRequest, signupVerify, googleLogin, logoutUser, isLoggedIn } from '../services/api';
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
@@ -16,12 +16,19 @@ export function AuthProvider({ children }) {
           setUser(data.user);
         } catch (error) {
           console.error('Failed to load profile:', error);
-          logoutUser();
+          await logoutUser();
         }
       }
       setLoading(false);
     }
     loadUser();
+
+    const handleUnauthorized = async () => {
+      setUser(null);
+      toast.error('Session expired. Please log in again.');
+    };
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
   }, []);
 
   const login = async (email, password) => {
@@ -31,21 +38,34 @@ export function AuthProvider({ children }) {
     return data;
   };
 
-  const register = async (name, email, password, confirmPassword) => {
-    const data = await registerUser(name, email, password, confirmPassword);
+  const loginWithGoogle = async (credential) => {
+    const data = await googleLogin(credential);
+    setUser(data.user);
+    toast.success('Logged in with Google!');
+    return data;
+  };
+
+  const requestSignup = async (name, email, password, phone) => {
+    const data = await signupRequest(name, email, password, phone);
+    toast.success('Verification code sent to ' + phone);
+    return data;
+  };
+
+  const verifySignup = async (name, email, password, phone, code) => {
+    const data = await signupVerify(name, email, password, phone, code);
     setUser(data.user);
     toast.success('Account created successfully!');
     return data;
   };
 
-  const logout = () => {
-    logoutUser();
+  const logout = async () => {
+    await logoutUser();
     setUser(null);
     toast.success('Logged out');
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, requestSignup, verifySignup, logout }}>
       {children}
     </AuthContext.Provider>
   );

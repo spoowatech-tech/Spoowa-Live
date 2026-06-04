@@ -1,9 +1,10 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { authenticate } from '../middleware/auth.js';
 import { asyncHandler } from '../middleware/validate.js';
 
 // Controllers
-import { register, login, getProfile } from '../controllers/auth.js';
+import { signupRequest, signupVerify, login, googleAuth, refresh, logout, getProfile, forgotPasswordRequest, forgotPasswordVerify, resetPassword } from '../controllers/auth.js';
 import { getProducts, getProductById, getBestsellers } from '../controllers/products.js';
 import { getCart, addToCart, updateCartItem, removeFromCart, clearCart } from '../controllers/cart.js';
 import { applyCoupon } from '../controllers/coupons.js';
@@ -24,9 +25,36 @@ apiRouter.get('/health', (req, res) => {
 // ============================================================
 // Auth Routes (public)
 // ============================================================
-apiRouter.post('/auth/register', asyncHandler(register));
-apiRouter.post('/auth/login', asyncHandler(login));
+const signupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 signup requests per windowMs
+  message: { error: 'Too many signup requests from this IP, please try again after 15 minutes' }
+});
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too many login attempts from this IP, please try again after 15 minutes' }
+});
+
+const googleLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: 'Too many Google login attempts from this IP, please try again after 15 minutes' }
+});
+
+apiRouter.post('/auth/signup-request', signupLimiter, asyncHandler(signupRequest));
+apiRouter.post('/auth/signup-verify', asyncHandler(signupVerify));
+apiRouter.post('/auth/login', loginLimiter, asyncHandler(login));
+apiRouter.post('/auth/google', googleLimiter, asyncHandler(googleAuth));
+apiRouter.post('/auth/refresh', asyncHandler(refresh));
+apiRouter.post('/auth/logout', asyncHandler(logout));
 apiRouter.get('/auth/profile', authenticate, asyncHandler(getProfile));
+
+// Forgot Password Routes
+apiRouter.post('/auth/forgot-password/request', signupLimiter, asyncHandler(forgotPasswordRequest));
+apiRouter.post('/auth/forgot-password/verify', asyncHandler(forgotPasswordVerify));
+apiRouter.post('/auth/forgot-password/reset', asyncHandler(resetPassword));
 
 // ============================================================
 // Product Routes (public)

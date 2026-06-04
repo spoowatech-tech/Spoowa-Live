@@ -28,11 +28,34 @@ async function request(url, options = {}) {
     ...options.headers,
   };
 
-  const response = await fetch(url, { ...options, headers });
+  // Ensure cookies are sent with requests for refresh tokens
+  const fetchOptions = { ...options, headers, credentials: "include" };
 
-  if (response.status === 401) {
-    removeToken();
-    // Optionally redirect to login
+  let response = await fetch(url, fetchOptions);
+
+  if (response.status === 401 && !url.includes('/auth/refresh') && !url.includes('/auth/login')) {
+    // Try refreshing the token
+    try {
+      const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include' // Important: send http-only cookie
+      });
+      
+      if (refreshRes.ok) {
+        const { token } = await refreshRes.json();
+        setToken(token);
+        
+        // Retry original request with new token
+        fetchOptions.headers.Authorization = `Bearer ${token}`;
+        response = await fetch(url, fetchOptions);
+      } else {
+        removeToken();
+        window.dispatchEvent(new Event('auth:unauthorized'));
+      }
+    } catch (e) {
+      removeToken();
+      window.dispatchEvent(new Event('auth:unauthorized'));
+    }
   }
 
   if (!response.ok) {
@@ -47,10 +70,26 @@ async function request(url, options = {}) {
 // Auth API
 // ============================================================
 
-export async function registerUser(name, email, password, confirmPassword) {
-  const data = await request(`${API_BASE}/auth/register`, {
+export async function signupRequest(name, email, password, phone) {
+  return request(`${API_BASE}/auth/signup-request`, {
     method: "POST",
-    body: JSON.stringify({ name, email, password, confirmPassword }),
+    body: JSON.stringify({ name, email, password, phone }),
+  });
+}
+
+export async function signupVerify(name, email, password, phone, code) {
+  const data = await request(`${API_BASE}/auth/signup-verify`, {
+    method: "POST",
+    body: JSON.stringify({ name, email, password, phone, code }),
+  });
+  if (data.token) setToken(data.token);
+  return data;
+}
+
+export async function googleLogin(credential) {
+  const data = await request(`${API_BASE}/auth/google`, {
+    method: "POST",
+    body: JSON.stringify({ credential }),
   });
   if (data.token) setToken(data.token);
   return data;
@@ -69,12 +108,36 @@ export async function getProfile() {
   return request(`${API_BASE}/auth/profile`);
 }
 
-export function logoutUser() {
+export async function logoutUser() {
+  try {
+    await request(`${API_BASE}/auth/logout`, { method: "POST" });
+  } catch (e) {}
   removeToken();
 }
 
 export function isLoggedIn() {
   return !!getToken();
+}
+
+export async function forgotPasswordRequest(identifier) {
+  return request(`${API_BASE}/auth/forgot-password/request`, {
+    method: "POST",
+    body: JSON.stringify({ identifier }),
+  });
+}
+
+export async function forgotPasswordVerify(identifier, code) {
+  return request(`${API_BASE}/auth/forgot-password/verify`, {
+    method: "POST",
+    body: JSON.stringify({ identifier, code }),
+  });
+}
+
+export async function resetPassword(resetToken, newPassword) {
+  return request(`${API_BASE}/auth/forgot-password/reset`, {
+    method: "POST",
+    body: JSON.stringify({ resetToken, newPassword }),
+  });
 }
 
 // ============================================================

@@ -22,14 +22,14 @@ export function authenticate(req, res, next) {
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: 'Session expired. Please log in again.' });
+      return res.status(401).json({ error: 'Session expired. Please refresh token.' });
     }
     return res.status(401).json({ error: 'Invalid token. Please log in again.' });
   }
 }
 
 /**
- * Generate a JWT token for a user.
+ * Generate an Access JWT token for a user.
  */
 export function generateToken(userId, email) {
   const config = getServerConfig();
@@ -38,4 +38,28 @@ export function generateToken(userId, email) {
     config.jwtSecret,
     { expiresIn: config.jwtExpiresIn }
   );
+}
+
+/**
+ * Generate a Refresh JWT token for a user.
+ */
+export function generateRefreshToken(userId) {
+  const config = getServerConfig();
+  return jwt.sign(
+    { userId },
+    config.jwtRefreshSecret,
+    { expiresIn: config.jwtRefreshExpiresIn }
+  );
+}
+
+/**
+ * Verify a Refresh token.
+ */
+export function verifyRefreshToken(token) {
+  const config = getServerConfig();
+  try {
+    return jwt.verify(token, config.jwtRefreshSecret);
+  } catch (error) {
+    return null;
+  }
 }

@@ -15,10 +15,40 @@ CREATE TABLE IF NOT EXISTS users (
   id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name        VARCHAR(100)  NOT NULL,
   email       VARCHAR(255)  NOT NULL UNIQUE,
-  password    VARCHAR(255)  NOT NULL,
+  password    VARCHAR(255)  DEFAULT NULL,
+  phone       VARCHAR(20)   UNIQUE DEFAULT NULL,
+  phone_verified BOOLEAN    DEFAULT FALSE,
+  provider    VARCHAR(50)   DEFAULT 'local',
+  google_id   VARCHAR(255)  UNIQUE DEFAULT NULL,
   created_at  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
   updated_at  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_users_email (email)
+  INDEX idx_users_email (email),
+  INDEX idx_users_phone (phone)
+) ENGINE=InnoDB;
+
+-- ============================================================
+-- Refresh Tokens
+-- ============================================================
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id     INT UNSIGNED NOT NULL,
+  token       VARCHAR(500) NOT NULL,
+  expires_at  TIMESTAMP    NOT NULL,
+  created_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_refresh_tokens_token (token)
+) ENGINE=InnoDB;
+
+-- ============================================================
+-- OTP Codes
+-- ============================================================
+CREATE TABLE IF NOT EXISTS otp_codes (
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  identifier  VARCHAR(255) NOT NULL,
+  code        VARCHAR(255) NOT NULL,
+  expires_at  TIMESTAMP    NOT NULL,
+  created_at  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_otp_codes_identifier (identifier)
 ) ENGINE=InnoDB;
 
 -- ============================================================
