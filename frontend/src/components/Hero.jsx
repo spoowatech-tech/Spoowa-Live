@@ -31,8 +31,8 @@ export function Hero() {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
-            <a 
-              href="#bestsellers" 
+            <a
+              href="#bestsellers"
               className="group inline-flex items-center gap-2 rounded-full bg-[#D4AF37] px-7 py-4 text-xs font-bold tracking-widest text-white shadow-md hover:shadow-lg transition-all hover:bg-[#b8931d] hover:scale-102"
             >
               SHOP NOW
@@ -40,8 +40,8 @@ export function Hero() {
                 <Zap className="h-3.5 w-3.5 fill-current" />
               </span>
             </a>
-            <a 
-              href="#bestsellers" 
+            <a
+              href="#bestsellers"
               className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/70 backdrop-blur-sm px-7 py-4 text-xs font-bold tracking-widest text-gray-800 transition-all hover:bg-white hover:border-gray-300"
             >
               EXPLORE FLAVORS
@@ -88,8 +88,8 @@ export function Hero() {
             { icon: "🇮🇳", title: "MADE IN INDIA", desc: "Formulated for active lives", color: "var(--berry)" },
           ].map((f) => (
             <div key={f.title} className="flex items-start gap-3 bg-white/60 p-5 hover:bg-white/80 transition-colors">
-              <div 
-                className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-xl border border-white" 
+              <div
+                className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-xl border border-white"
                 style={{ background: `color-mix(in oklab, ${f.color} 20%, transparent)` }}
               >
                 <span>{f.icon}</span>

@@ -37,7 +37,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="mt-20 bg-[#140F09] text-white/80">
+    <footer id="footer" className="mt-20 bg-[#140F09] text-white/80">
       {/* Newsletter Banner */}
       <div className="border-b border-white/8">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">

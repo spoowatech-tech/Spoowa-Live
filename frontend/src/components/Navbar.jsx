@@ -89,9 +89,9 @@ export function Navbar() {
     { label: "Home", to: "/" },
     { label: "Shop", to: "/shop" },
     { label: "About Us", to: "/about" },
-    { label: "Ingredients", to: "/about" },
+    { label: "Ingredients", to: "/#ingredients" },
     { label: "Team", to: "/team" },
-    { label: "Contact", to: "/about" },
+    { label: "Contact", to: "/#footer" },
   ];
 
   const isActive = (to) => {
@@ -119,6 +119,21 @@ export function Navbar() {
             <Link
               key={l.label}
               to={l.to}
+              onClick={(e) => {
+                if (l.label === "Contact") {
+                  const footer = document.getElementById("footer");
+                  if (footer) {
+                    e.preventDefault();
+                    footer.scrollIntoView({ behavior: "smooth" });
+                  }
+                } else if (l.label === "Ingredients") {
+                  const ingredients = document.getElementById("ingredients");
+                  if (ingredients) {
+                    e.preventDefault();
+                    ingredients.scrollIntoView({ behavior: "smooth" });
+                  }
+                }
+              }}
               className={`relative text-[13px] font-bold tracking-wide transition-colors duration-200 py-1 ${
                 isActive(l.to)
                   ? "text-[#D88A00]"
@@ -272,7 +287,26 @@ export function Navbar() {
                   >
                     <Link
                       to={l.to}
-                      onClick={() => setOpen(false)}
+                      onClick={(e) => {
+                        setOpen(false);
+                        if (l.label === "Contact") {
+                          const footer = document.getElementById("footer");
+                          if (footer) {
+                            e.preventDefault();
+                            setTimeout(() => {
+                              footer.scrollIntoView({ behavior: "smooth" });
+                            }, 300);
+                          }
+                        } else if (l.label === "Ingredients") {
+                          const ingredients = document.getElementById("ingredients");
+                          if (ingredients) {
+                            e.preventDefault();
+                            setTimeout(() => {
+                              ingredients.scrollIntoView({ behavior: "smooth" });
+                            }, 300);
+                          }
+                        }
+                      }}
                       className={`flex items-center justify-between rounded-xl px-4 py-3 text-[15px] font-bold transition-all ${
                         isActive(l.to)
                           ? "bg-[#FFF8E8] text-[#D88A00]"

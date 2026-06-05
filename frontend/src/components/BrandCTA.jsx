@@ -17,7 +17,7 @@ const stats = [
 
 export function BrandCTA() {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <section id="ingredients" className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-white via-white to-[color:color-mix(in_oklab,var(--berry)_8%,white)] shadow-card">
         <div className="grid items-center gap-6 lg:grid-cols-12 lg:gap-4">
           <div className="relative lg:col-span-4">
