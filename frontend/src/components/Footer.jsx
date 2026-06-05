@@ -1,9 +1,21 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { Mail, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import logo from "@/assets/logo.png";
 import logoSpefl from "@/assets/logo_spefl.png";
 import { subscribeNewsletter } from "@/services/api";
+
+const SOCIAL = [
+  { url: "https://www.linkedin.com/company/spoowa", iconClass: "fa-brands fa-linkedin-in", label: "LinkedIn" },
+  { url: "https://www.instagram.com/spoowa_official?igsh=eW93ZGhlNHR3aHlr", iconClass: "fa-brands fa-instagram", label: "Instagram" },
+  { url: "https://x.com/Spoowa_offcial", iconClass: "fa-brands fa-x-twitter", label: "X (Twitter)" },
+  { url: "https://www.facebook.com/Spoowa", iconClass: "fa-brands fa-facebook-f", label: "Facebook" },
+  { url: "https://www.threads.net/@spoowa_official?igshid=NTc4MTIwNjQ2YQ==", iconClass: "fa-brands fa-threads", label: "Threads" },
+  { url: "https://www.youtube.com/@Spoowa_offcials", iconClass: "fa-brands fa-youtube", label: "YouTube" },
+  { url: "https://in.pinterest.com/spowacorporate/_pins", iconClass: "fa-brands fa-pinterest-p", label: "Pinterest" },
+];
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -25,93 +37,146 @@ export function Footer() {
   };
 
   return (
-    <footer className="mt-20 bg-foreground text-background">
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+    <footer className="mt-20 bg-[#140F09] text-white/80">
+      {/* Newsletter Banner */}
+      <div className="border-b border-white/8">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-center gap-6 text-center lg:flex-row lg:text-left lg:justify-between lg:gap-10">
+            <div className="max-w-md">
+              <div className="inline-flex items-center gap-2 rounded-full bg-[#F4B000]/15 border border-[#F4B000]/20 px-3.5 py-1.5 text-[11px] font-extrabold tracking-[0.15em] text-[#F4B000] uppercase mb-3">
+                <Mail className="h-3.5 w-3.5" /> Newsletter
+              </div>
+              <h3 className="text-xl font-black text-white font-display">Stay Hydrated. Stay Updated.</h3>
+              <p className="mt-1.5 text-sm text-white/55 font-medium">Get exclusive offers, wellness tips, and new product launches — direct to your inbox.</p>
+            </div>
+            <form onSubmit={handleSubscribe} className="flex w-full max-w-md gap-0 overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-1">
+              <div className="flex flex-1 items-center gap-2.5 pl-4">
+                <Mail className="h-4 w-4 text-white/30 shrink-0" />
+                <input
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                  type="email"
+                  className="flex-1 bg-transparent text-sm text-white placeholder:text-white/30 outline-none font-medium"
+                />
+              </div>
+              <button
+                disabled={subscribing}
+                type="submit"
+                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#F4B000] to-[#E59700] px-5 py-3 text-xs font-extrabold text-white shadow-[0_4px_16px_rgba(244,176,0,0.30)] hover:shadow-[0_6px_24px_rgba(244,176,0,0.40)] transition-all disabled:opacity-60"
+              >
+                {subscribing ? "Joining…" : <><ArrowRight className="h-3.5 w-3.5" /> Join</>}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {/* Main footer content */}
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-12">
-          {/* Column 1: Branding & Skill Council Logo */}
+          {/* Branding */}
           <div className="lg:col-span-4">
-            <Link to="/" className="logo inline-block bg-white p-1.5 rounded mb-4">
+            <Link to="/" className="inline-block rounded-xl bg-white p-2.5 border border-white/20 mb-5 shadow-[0_4px_16px_rgba(0,0,0,0.25)]">
               <img src={logo} alt="SPOOWA Logo" className="h-8 w-auto object-contain" />
             </Link>
-            <p className="mt-2 max-w-xs text-sm text-background/70">
+            <p className="text-sm text-white/65 leading-relaxed max-w-xs font-medium">
               Dynamic sports-oriented hydration and energy drink formulas combined with functional premium honey blends. Naturally sweetened.
             </p>
-            
-            {/* Associated certification logo */}
-            <div className="mt-6 flex flex-col gap-2">
-              <span className="text-[9px] font-bold tracking-wider text-background/40 uppercase">Certified & Associated with</span>
-              <div className="bg-white p-2 rounded max-w-[150px] border border-white/10 flex items-center justify-center">
-                <img src={logoSpefl} alt="SPEFL-SC Logo" className="h-10 w-auto object-contain" />
+
+            {/* Certification */}
+            <div className="mt-6">
+              <span className="text-[9px] font-extrabold tracking-[0.2em] text-white/30 uppercase block mb-2">
+                Certified & Associated with
+              </span>
+              <div className="inline-block bg-white p-2.5 rounded-xl border border-white/20 shadow-[0_4px_16px_rgba(0,0,0,0.25)]">
+                <img src={logoSpefl} alt="SPEFL-SC Logo" className="h-9 w-auto object-contain" />
               </div>
             </div>
 
-            {/* Social links */}
-            <div className="mt-6 flex flex-wrap gap-3">
-              {[
-                { url: "https://www.linkedin.com/company/spoowa", iconClass: "fa-brands fa-linkedin-in", label: "LinkedIn" },
-                { url: "https://www.instagram.com/spoowa_official?igsh=eW93ZGhlNHR3aHlr", iconClass: "fa-brands fa-instagram", label: "Instagram" },
-                { url: "https://x.com/Spoowa_offcial", iconClass: "fa-brands fa-x-twitter", label: "X (Twitter)" },
-                { url: "https://www.facebook.com/Spoowa", iconClass: "fa-brands fa-facebook-f", label: "Facebook" },
-                { url: "https://www.threads.net/@spoowa_official?igshid=NTc4MTIwNjQ2YQ==", iconClass: "fa-brands fa-threads", label: "Threads" },
-                { url: "https://www.youtube.com/@Spoowa_offcials", iconClass: "fa-brands fa-youtube", label: "YouTube" },
-                { url: "https://in.pinterest.com/spowacorporate/_pins", iconClass: "fa-brands fa-pinterest-p", label: "Pinterest" }
-              ].map((s, i) => (
-                <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.label} className="grid h-9 w-9 place-items-center rounded-full border border-background/20 hover:bg-accent hover:border-accent hover:text-white transition-colors">
-                  <i className={`${s.iconClass} text-sm`}></i>
+            {/* Social icons */}
+            <div className="mt-6 flex flex-wrap gap-2.5">
+              {SOCIAL.map((s, i) => (
+                <a
+                  key={i}
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.label}
+                  className="grid h-9 w-9 place-items-center rounded-full border border-white/10 text-white/50 hover:bg-[#F4B000] hover:border-[#F4B000] hover:text-white transition-all duration-200"
+                >
+                  <i className={`${s.iconClass} text-sm`} />
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Column 2: Navigation Links */}
+          {/* Navigation */}
           <div className="lg:col-span-2">
-            <p className="text-xs font-bold tracking-[0.18em] text-background/60">NAVIGATION</p>
-            <ul className="mt-4 space-y-3 text-sm">
-              <li>
-                <Link to="/#bestsellers" className="text-background/85 hover:text-accent font-medium">Product</Link>
-              </li>
-              <li>
-                <Link to="/about" className="text-background/85 hover:text-accent font-medium">About</Link>
-              </li>
-              <li>
-                <Link to="/team" className="text-background/85 hover:text-accent font-medium">Team</Link>
-              </li>
+            <p className="text-[10px] font-extrabold tracking-[0.22em] text-white/30 uppercase mb-4">Navigation</p>
+            <ul className="space-y-3">
+              {[
+                { label: "Products", to: "/#bestsellers" },
+                { label: "Shop", to: "/shop" },
+                { label: "About Us", to: "/about" },
+                { label: "Our Team", to: "/team" },
+              ].map(({ label, to }) => (
+                <li key={label}>
+                  <Link to={to} className="text-sm text-white/55 hover:text-[#F4B000] font-medium transition-colors duration-200">
+                    {label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Column 3: Headquarters Address & Contact */}
-          <div className="lg:col-span-3">
-            <p className="text-xs font-bold tracking-[0.18em] text-background/60">HEADQUARTERS</p>
-            <p className="mt-4 text-xs leading-relaxed text-background/75">
+          {/* Support */}
+          <div className="lg:col-span-2">
+            <p className="text-[10px] font-extrabold tracking-[0.22em] text-white/30 uppercase mb-4">Support</p>
+            <ul className="space-y-3">
+              {["FAQs", "Contact Us", "Shipping Info", "Returns"].map(item => (
+                <li key={item}>
+                  <a href="#" className="text-sm text-white/55 hover:text-[#F4B000] font-medium transition-colors duration-200">
+                    {item}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Headquarters */}
+          <div className="lg:col-span-4">
+            <p className="text-[10px] font-extrabold tracking-[0.22em] text-white/30 uppercase mb-4">Headquarters</p>
+            <p className="text-sm leading-relaxed text-white/50 font-medium">
               Sports, Physical Education, Fitness and Leisure Skills Council<br />
               207, DLF Tower, Galleria Mall,<br />
               Delhi, 110091, DL, IN
             </p>
-            <p className="mt-3 text-xs text-background/75">
-              <strong>Tel:</strong> <a href="tel:01140539409" className="hover:text-accent transition-colors">011-40539409</a>
+            <p className="mt-3 text-sm text-white/50 font-medium">
+              Tel:{" "}
+              <a href="tel:01140539409" className="text-white/70 hover:text-[#F4B000] transition-colors font-bold">
+                011-40539409
+              </a>
             </p>
-          </div>
-
-          {/* Column 4: Newsletter */}
-          <div className="lg:col-span-3">
-            <p className="text-xs font-bold tracking-[0.18em] text-background/60">STAY HYDRATED</p>
-            <p className="mt-4 text-sm text-background/75">Get launch updates & deals.</p>
-            <form onSubmit={handleSubscribe} className="mt-3 flex overflow-hidden rounded-full border border-background/20">
-              <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" required type="email" className="flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-background/50 outline-none" />
-              <button disabled={subscribing} type="submit" className="bg-accent px-4 text-xs font-bold text-white hover:bg-accent/80 transition-colors">
-                {subscribing ? "WAIT..." : "JOIN"}
-              </button>
-            </form>
+            <div className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#F4B000]/10 border border-[#F4B000]/15 px-4 py-2.5">
+              <div className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-xs font-bold text-white/70">Orders shipping within 24 hours</span>
+            </div>
           </div>
         </div>
 
-        {/* Footer bottom */}
-        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-background/15 pt-6 text-xs text-background/60 sm:flex-row">
-          <p>© {new Date().getFullYear()} Spoowa Beverages Pvt. Ltd. All rights reserved.</p>
-          <div className="flex gap-5">
-            <a href="#" className="hover:text-accent">Privacy</a>
-            <a href="#" className="hover:text-accent">Terms</a>
-            <a href="#" className="hover:text-accent">Cookies</a>
+        {/* Bottom bar */}
+        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/8 pt-8 sm:flex-row sm:items-center">
+          <p className="text-xs text-white/30 font-medium">
+            © {new Date().getFullYear()} Spoowa Beverages Pvt. Ltd. All rights reserved.
+          </p>
+          <div className="flex gap-6">
+            {["Privacy", "Terms", "Cookies"].map(link => (
+              <a key={link} href="#" className="text-xs text-white/30 hover:text-[#F4B000] font-medium transition-colors">
+                {link}
+              </a>
+            ))}
           </div>
         </div>
       </div>

@@ -80,11 +80,11 @@ function PanelLogo() {
 
 function MarketingFeature({ icon: Icon, title, description, index }) {
   return (
-    <motion.div custom={index} variants={fieldVariants} className="flex items-center gap-4 rounded-[24px] border border-white/70 bg-white/60 p-3.5 shadow-[0_16px_45px_rgba(92,55,0,0.08)] backdrop-blur-xl">
-      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] bg-white text-[#E79B00] shadow-[0_12px_30px_rgba(244,176,0,0.15)]"><Icon className="h-6 w-6" strokeWidth={2.2} /></span>
+    <motion.div custom={index} variants={fieldVariants} className="flex items-center gap-4 rounded-[24px] border border-white/60 bg-white/65 p-4 shadow-[0_12px_36px_rgba(92,55,0,0.10)] backdrop-blur-2xl hover:bg-white/80 transition-all duration-300">
+      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] bg-gradient-to-br from-white to-[#FFF8E8] text-[#E79B00] shadow-[0_8px_24px_rgba(244,176,0,0.18)] border border-[#F4B000]/15"><Icon className="h-6 w-6" strokeWidth={2.2} /></span>
       <span>
         <span className="block text-[15px] font-extrabold leading-tight text-[#2B1D12]">{title}</span>
-        <span className="mt-1 block text-sm leading-snug text-[#4B3A2A]">{description}</span>
+        <span className="mt-1 block text-sm leading-snug text-[#4B3A2A]/80">{description}</span>
       </span>
     </motion.div>
   );
@@ -96,17 +96,17 @@ function MarketingPanel({ mode }) {
   const direction = isSignup ? 1 : -1;
 
   return (
-    <motion.section layout transition={panelTransition} className={`relative order-2 min-h-[620px] w-full min-w-0 overflow-hidden bg-[#FFF8E8] p-7 text-[#2B1D12] sm:p-10 lg:min-h-0 lg:basis-[45%] lg:p-12 ${isSignup ? "lg:order-2" : "lg:order-1"}`}>
+    <motion.section layout transition={panelTransition} className={`relative order-2 min-h-[520px] w-full min-w-0 overflow-hidden bg-gradient-to-br from-[#FFF8E8] via-[#FFFDF5] to-[#FFF3D0] p-7 text-[#2B1D12] sm:p-8 lg:min-h-0 lg:basis-[44%] lg:p-9 ${isSignup ? "lg:order-2" : "lg:order-1"}`}>
       <img src={honeyPanel} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-80" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(130deg,rgba(255,248,232,0.80),rgba(255,253,247,0.40)_50%,rgba(244,176,0,0.12))]" />
       <div aria-hidden="true" className="pointer-events-none absolute -left-16 top-28 h-64 w-56 opacity-55" style={honeycombBackground} />
       <div aria-hidden="true" className="pointer-events-none absolute -right-10 bottom-2 h-72 w-72 opacity-45" style={honeycombBackground} />
 
-      <div className="relative z-10 flex h-full min-h-[540px] flex-col">
+      <div className="relative z-10 flex h-full flex-col">
         <PanelLogo />
         <AnimatePresence mode="wait" custom={direction}>
-          <motion.div key={mode} custom={direction} variants={contentVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }} className="mt-16 max-w-[390px] sm:mt-20 lg:mt-[118px]">
-            <h1 className="text-4xl font-black leading-[1.05] tracking-normal text-[#2B1D12] sm:text-5xl">
+          <motion.div key={mode} custom={direction} variants={contentVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }} className="mt-12 max-w-[360px] sm:mt-16 lg:mt-20">
+            <h1 className="text-4xl font-black leading-[1.05] tracking-tight text-[#2B1D12] sm:text-[3.25rem] font-display">
               {mode === 'forgot' ? "Reset Password" : isSignup ? "Create Account" : "Welcome Back!"}
             </h1>
             <p className="mt-5 max-w-[360px] text-[17px] leading-8 text-[#2B1D12]/90">
@@ -184,7 +184,7 @@ function GradientButton({ children, disabled, onClick, type = "submit" }) {
       onClick={onClick}
       whileHover={disabled ? {} : { y: -1 }}
       whileTap={disabled ? {} : { scale: 0.985 }}
-      className={`h-16 w-full min-w-0 rounded-2xl bg-gradient-to-r from-[#EFA300] via-[#F4B000] to-[#FFC83D] px-5 text-base font-extrabold text-white transition duration-300 ${disabled ? 'opacity-50 cursor-not-allowed shadow-none' : 'cursor-pointer shadow-[0_22px_44px_rgba(244,176,0,0.32)] hover:shadow-[0_26px_52px_rgba(244,176,0,0.40)]'}`}
+      className={`h-[58px] w-full min-w-0 rounded-2xl bg-gradient-to-r from-[#EFA300] via-[#F4B000] to-[#FFC83D] px-5 text-[15px] font-extrabold text-white tracking-wide transition duration-300 ${disabled ? 'opacity-50 cursor-not-allowed shadow-none' : 'cursor-pointer shadow-[0_16px_40px_rgba(244,176,0,0.36)] hover:shadow-[0_20px_50px_rgba(244,176,0,0.44)] hover:-translate-y-0.5'}`}
     >
       {children}
     </motion.button>
@@ -536,12 +536,7 @@ function FormPanel({ mode, setMode }) {
   const direction = mode === 'forgot' ? -1 : isSignup ? 1 : -1;
 
   return (
-    <motion.section layout transition={panelTransition} className={`relative order-1 flex min-h-[720px] w-full min-w-0 items-center justify-center bg-white px-6 py-10 sm:px-10 lg:min-h-0 lg:basis-[55%] lg:px-16 ${isSignup ? "lg:order-1" : "lg:order-2"}`}>
-      <div className="absolute right-6 top-6 hidden sm:block">
-        <button type="button" className="inline-flex h-11 items-center gap-2 rounded-full border border-[#E6E1D8] bg-white/90 px-4 text-sm font-bold text-[#2B1D12] shadow-[0_14px_36px_rgba(43,29,18,0.05)] backdrop-blur-xl cursor-pointer">
-          <Globe2 className="h-4 w-4" />English
-        </button>
-      </div>
+    <motion.section layout transition={panelTransition} className={`relative order-1 flex w-full min-w-0 items-center justify-center bg-white px-6 py-10 sm:px-8 lg:basis-[56%] lg:px-10 ${isSignup ? "lg:order-1" : "lg:order-2"}`}>
 
       <div className="w-full min-w-0 max-w-[520px]">
         <AnimatePresence mode="wait" custom={direction}>
@@ -576,13 +571,24 @@ function FormPanel({ mode, setMode }) {
 function Auth() {
   const [mode, setMode] = useState("login");
   return (
-    <div className="min-h-screen bg-[#FFFDF7] font-body text-[#2B1D12]">
+    <div className="relative min-h-screen overflow-x-hidden bg-[#FFFDF7] font-body text-[#2B1D12]">
+      {/* Background orbs — clipped by parent overflow-x-hidden, never affect vertical layout */}
+      <div className="pointer-events-none absolute -left-40 top-40 h-96 w-96 rounded-full bg-[#FFC83D]/20 blur-[100px]" />
+      <div className="pointer-events-none absolute -right-40 bottom-40 h-[28rem] w-[28rem] rounded-full bg-[#F4B000]/15 blur-[120px]" />
+
       <Navbar />
-      <main className="relative isolate flex min-h-[calc(100vh-73px)] items-center justify-center overflow-hidden px-4 py-8 sm:px-6 lg:px-8">
-        <div className="pointer-events-none absolute -left-32 top-12 h-80 w-80 rounded-full bg-[#FFC83D]/20 blur-3xl" />
-        <div className="pointer-events-none absolute -right-36 bottom-8 h-96 w-96 rounded-full bg-[#F4B000]/15 blur-3xl" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[linear-gradient(180deg,rgba(255,248,232,0.9),rgba(255,253,247,0))]" />
-        <motion.div layout transition={panelTransition} className="relative z-10 flex w-full min-w-0 max-w-[1200px] flex-col overflow-hidden rounded-[32px] border border-white/80 bg-white shadow-[0_35px_90px_rgba(43,29,18,0.12),0_12px_40px_rgba(244,176,0,0.10)] lg:h-[750px] lg:flex-row">
+
+      <main className="relative z-10 flex min-h-[calc(100vh-64px)] items-start justify-center px-4 py-6 sm:px-6 lg:items-center lg:px-8">
+        {/* Subtle top/bottom gradient overlays */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[linear-gradient(180deg,rgba(255,248,232,0.6),rgba(255,253,247,0))]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(0deg,rgba(255,248,232,0.4),rgba(255,253,247,0))]" />
+
+        {/* Auth card */}
+        <motion.div
+          layout
+          transition={panelTransition}
+          className="relative z-10 flex w-full min-w-0 max-w-[960px] flex-col overflow-hidden rounded-[28px] border border-white/90 bg-white shadow-[0_24px_64px_rgba(43,29,18,0.12),0_8px_32px_rgba(244,176,0,0.09)] lg:flex-row"
+        >
           <MarketingPanel mode={mode} />
           <FormPanel mode={mode} setMode={setMode} />
         </motion.div>
@@ -592,3 +598,4 @@ function Auth() {
 }
 
 export default Auth;
+
