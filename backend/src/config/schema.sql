@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS products (
   reviews         INT UNSIGNED  DEFAULT 0,
   is_bestseller   BOOLEAN       DEFAULT FALSE,
   is_active       BOOLEAN       DEFAULT TRUE,
+  stock           INT UNSIGNED  DEFAULT 100,
   created_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
   updated_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_products_type (type),

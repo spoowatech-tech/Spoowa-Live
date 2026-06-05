@@ -29,7 +29,7 @@ export function WishlistProvider({ children }) {
 
   const toggleWishlist = async (productId) => {
     if (!user) {
-      toast.error('Please log in to add items to wishlist.');
+      window.location.href = '/auth';
       return false;
     }
     setLoading(true);

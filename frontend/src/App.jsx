@@ -9,6 +9,8 @@ import Auth from './pages/Auth';
 import Cart from './pages/Cart';
 import ProductDetail from './pages/ProductDetail';
 import Shop from './pages/Shop';
+import Wishlist from './pages/Wishlist';
+import Checkout from './pages/Checkout';
 import NotFound from './pages/NotFound';
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -55,6 +57,8 @@ function App() {
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/shop" element={<Shop />} />
+                <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/checkout" element={<Checkout />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </WishlistProvider>

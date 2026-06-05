@@ -1,19 +1,17 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
-  Search, Heart, Star, ChevronDown,
-  ShoppingCart, SlidersHorizontal, X,
-  Truck, ShieldCheck, Lock, Droplets, FlaskConical,
-  ArrowRight, Eye, Package, Award, Sparkles, Zap, Leaf
+  Search, ChevronDown,
+  SlidersHorizontal, X,
+  ShieldCheck, Lock, Droplets, FlaskConical,
+  ArrowRight, Package, Award, Sparkles, Zap, Leaf, Truck
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AnnouncementBar, Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import productHoney from "@/assets/product_honey.png";
 
 import { getProducts } from "@/services/api";
-import { useCart } from "@/context/CartContext";
-import { useWishlist } from "@/context/WishlistContext";
+import ProductCard from "@/components/ProductCard";
 
 const productTypes = ["Raw Honey", "Wild Forest Honey", "Organic Honey", "Turmeric Honey", "Acacia Honey", "Ginger Honey", "Gift Packs", "Wellness Combos"];
 const healthBenefits = ["Immunity", "Energy Boost", "Digestion", "Skin Health", "Weight Management"];
@@ -223,149 +221,6 @@ function SkeletonCard() {
   );
 }
 
-function ProductCard({ product, index }) {
-  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0]?.size_label || "");
-  const [isHovered, setIsHovered] = useState(false);
-  const [addingToCart, setAddingToCart] = useState(false);
-  const [added, setAdded] = useState(false);
-  const { addToCart } = useCart();
-  const { toggleWishlist, isInWishlist } = useWishlist();
-
-  const savings = product.originalPrice - product.price;
-  const discountPct = Math.round((savings / product.originalPrice) * 100);
-  const isWishlisted = isInWishlist(product.id);
-
-  const handleAddToCart = async (e) => {
-    e.stopPropagation();
-    if (addingToCart) return;
-    setAddingToCart(true);
-    try {
-      await addToCart(product.id, 1);
-      setAdded(true);
-      setTimeout(() => setAdded(false), 2000);
-    } finally {
-      setAddingToCart(false);
-    }
-  };
-
-  return (
-    <motion.article
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      className="group relative rounded-[24px] border border-border/40 bg-white shadow-card transition-all duration-300 hover:shadow-lift hover:-translate-y-2 overflow-hidden"
-    >
-      <Link to={`/product/${product.id}`} className="block">
-        {/* Badges */}
-        <div className="absolute top-3.5 left-3.5 z-10 flex flex-col gap-1.5">
-          {product.badge && (
-            <span className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-wide shadow-sm ${getBadgeStyle(product.badge)}`}>
-              {product.badge}
-            </span>
-          )}
-          {discountPct > 0 && (
-            <span className="rounded-full bg-red-500 px-2.5 py-1 text-[10px] font-extrabold text-white shadow-sm">
-              -{discountPct}%
-            </span>
-          )}
-        </div>
-
-        {/* Wishlist */}
-        <button
-          onClick={(e) => { e.preventDefault(); toggleWishlist(product.id); }}
-          className="absolute top-3.5 right-3.5 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm shadow-sm transition-all hover:scale-110 hover:bg-white"
-        >
-          <Heart
-            className={`h-4 w-4 transition-all duration-300 ${
-              isWishlisted ? "fill-red-500 text-red-500 scale-110" : "text-gray-400"
-            }`}
-          />
-        </button>
-
-        {/* Product Image */}
-        <div className={`relative flex aspect-[4/5] items-center justify-center bg-gradient-to-br ${product.gradient || "from-amber-50 to-yellow-100"} p-8 overflow-hidden`}>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent pointer-events-none" />
-          <motion.img
-            src={product.image || productHoney}
-            alt={product.name}
-            animate={{ scale: isHovered ? 1.08 : 1 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="max-h-full max-w-full object-contain drop-shadow-[0_12px_28px_rgba(244,176,0,0.15)]"
-          />
-          {/* Quick View bar */}
-          <div className={`absolute inset-x-0 bottom-0 transition-all duration-300 ${isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"}`}>
-            <span className="flex w-full items-center justify-center gap-1.5 bg-[#2B1D12]/85 backdrop-blur-sm text-white text-[11px] font-bold py-2.5 tracking-wide rounded-t-none">
-              <Eye className="h-3.5 w-3.5" /> Quick View
-            </span>
-          </div>
-        </div>
-      </Link>
-
-      {/* Product Info */}
-      <div className="px-4 pb-4 pt-3.5">
-        <Link to={`/product/${product.id}`}>
-          <h3 className="text-sm font-bold text-foreground hover:text-[#D88A00] transition-colors leading-snug line-clamp-2">{product.name}</h3>
-          <p className="mt-0.5 text-xs text-muted-foreground font-medium line-clamp-1">{product.description}</p>
-        </Link>
-
-        {/* Rating */}
-        <div className="mt-2 flex items-center gap-2">
-          <StarRating rating={product.rating} />
-          <span className="text-xs font-bold text-foreground/80">{product.rating}</span>
-          <span className="text-xs text-muted-foreground">({product.reviews || 0})</span>
-        </div>
-
-        {/* Size Options */}
-        {product.sizes?.length > 0 && (
-          <div className="mt-2.5 flex items-center gap-1.5 flex-wrap">
-            {product.sizes.map(s => (
-              <button
-                key={s.size_label}
-                onClick={() => setSelectedSize(s.size_label)}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
-                  selectedSize === s.size_label
-                    ? "border-[#F4B000] bg-[#FFF8E8] text-[#D88A00]"
-                    : "border-gray-200 text-muted-foreground hover:border-gray-300"
-                }`}
-              >
-                {s.size_label}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Pricing */}
-        <div className="mt-3 flex items-end gap-2">
-          <span className="text-lg font-black text-foreground">₹{product.price}</span>
-          <span className="text-sm text-muted-foreground line-through pb-0.5">₹{product.originalPrice}</span>
-          {savings > 0 && (
-            <span className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full pb-0.5">Save ₹{savings}</span>
-          )}
-        </div>
-
-        {/* Add to Cart */}
-        <button
-          onClick={handleAddToCart}
-          className={`mt-3.5 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-extrabold tracking-wide transition-all duration-300 ${
-            added
-              ? "bg-green-500 text-white shadow-[0_4px_14px_rgba(34,197,94,0.30)]"
-              : "bg-[#2B1D12] text-white hover:bg-[#F4B000] hover:shadow-[0_6px_20px_rgba(244,176,0,0.30)] active:scale-[0.97]"
-          }`}
-        >
-          {added ? (
-            <>✓ Added to Cart</>
-          ) : addingToCart ? (
-            <span className="animate-pulse">Adding…</span>
-          ) : (
-            <><ShoppingCart className="h-3.5 w-3.5" /> Add to Cart</>
-          )}
-        </button>
-      </div>
-    </motion.article>
-  );
-}
 
 function TrustSection() {
   const items = [

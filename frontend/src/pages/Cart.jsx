@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ShoppingBag, MapPin, Plus, Minus, X,
   Heart, Truck, Lock, Calendar, Check, Tag,
@@ -20,7 +20,7 @@ function QuantitySelector({ qty, onUpdate }) {
   return (
     <div className="inline-flex items-center rounded-xl border-2 border-gray-200 bg-white overflow-hidden">
       <button
-        onClick={() => onUpdate(Math.max(1, qty - 1))}
+        onClick={() => onUpdate(qty - 1)}
         className="flex h-9 w-9 items-center justify-center text-gray-400 hover:text-[#F4B000] hover:bg-[#FFF8E8] transition-all"
       >
         <Minus className="h-3.5 w-3.5" />
@@ -39,8 +39,10 @@ function QuantitySelector({ qty, onUpdate }) {
 }
 
 function CartItem({ item, selected, onToggleSelect, onUpdateQuantity, onRemove }) {
-  const product = item.product || {};
-  const savings = (product.originalPrice || 0) - (product.price || 0);
+  // item contains all product fields directly (flattened by API or Context)
+  const product = item;
+  const originalPrice = product.original_price || product.originalPrice || product.price || 0;
+  const savings = originalPrice - (product.price || 0);
 
   return (
     <motion.div
@@ -203,6 +205,7 @@ function Cart() {
   const [selected, setSelected] = useState([]);
   const [couponInput, setCouponInput] = useState("");
   const { toggleWishlist } = useWishlist();
+  const navigate = useNavigate();
 
   // Keep selected in sync with items
   if (items.length > 0 && selected.length === 0) {
@@ -222,35 +225,6 @@ function Cart() {
   };
 
   const totalSaved = summary.discount + (coupon?.discountAmount || 0);
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[#FFFDF7] font-body flex flex-col">
-        <AnnouncementBar />
-        <Navbar />
-        <main className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center"
-          >
-            <div className="h-24 w-24 rounded-[28px] bg-[#FFF8E8] flex items-center justify-center mb-6 border border-[#F4B000]/15 shadow-sm">
-              <Lock className="h-12 w-12 text-[#F4B000]/60" />
-            </div>
-            <h2 className="text-2xl font-black text-[#2B1D12] font-display">Sign in to view cart</h2>
-            <p className="mt-2 text-gray-500 font-medium">Your cart items will be saved when you sign in.</p>
-            <Link
-              to="/auth"
-              className="mt-8 inline-flex items-center gap-2 rounded-full btn-gold px-8 py-4 text-sm font-extrabold shadow-gold"
-            >
-              Sign In / Sign Up <ChevronRight className="h-4 w-4" />
-            </Link>
-          </motion.div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
 
   if (items.length === 0) return <EmptyCart />;
 
@@ -448,11 +422,17 @@ function Cart() {
                 {/* Checkout CTA */}
                 <button
                   disabled={loading || items.length === 0}
-                  onClick={() => placeOrder()}
+                  onClick={() => {
+                    if (!user) {
+                      navigate('/auth');
+                    } else {
+                      navigate('/checkout');
+                    }
+                  }}
                   className="mt-5 flex w-full items-center justify-center gap-2.5 rounded-2xl btn-gold py-4 text-sm font-extrabold tracking-wide animate-pulse-gold disabled:opacity-50 disabled:cursor-not-allowed disabled:animate-none"
                 >
                   <Lock className="h-4 w-4" />
-                  {loading ? "Processing…" : "Place Order (COD)"}
+                  Place Order
                 </button>
 
                 {/* Trust badges row */}

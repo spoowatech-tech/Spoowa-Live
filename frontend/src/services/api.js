@@ -228,16 +228,33 @@ export async function applyCoupon(code, orderTotal) {
   });
 }
 
+export const couponsAPI = { apply: applyCoupon };
+
 // ============================================================
 // Orders API
 // ============================================================
 
-export async function placeOrder(addressId, couponCode, discountAmount) {
+export async function placeOrder(orderData) {
   return request(`${API_BASE}/orders`, {
     method: "POST",
-    body: JSON.stringify({ addressId, couponCode, discountAmount }),
+    body: JSON.stringify(orderData),
   });
 }
+
+export const ordersAPI = {
+  createRazorpayOrder: async (amount) => {
+    return request(`${API_BASE}/orders/razorpay/create`, {
+      method: "POST",
+      body: JSON.stringify({ amount }),
+    });
+  },
+  verifyRazorpayPayment: async (paymentData) => {
+    return request(`${API_BASE}/orders/razorpay/verify`, {
+      method: "POST",
+      body: JSON.stringify(paymentData),
+    });
+  }
+};
 
 export async function getOrders() {
   return request(`${API_BASE}/orders`);

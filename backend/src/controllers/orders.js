@@ -1,18 +1,92 @@
+import crypto from 'crypto';
+import Razorpay from 'razorpay';
 import { createOrder, findOrdersByUserId, findOrderById } from '../models/Order.js';
+
+let razorpayInstance = null;
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+  razorpayInstance = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+}
 
 /**
  * POST /api/orders
- * Body: { addressId, couponCode, discountAmount }
+ * Body: { addressId, couponCode, discountAmount, paymentMethodOverride, paymentStatus, paymentId, razorpayOrderId, donation, gifting }
  */
 export async function placeOrder(req, res) {
-  const { addressId, couponCode, discountAmount } = req.body;
+  const { 
+    addressId, couponCode, discountAmount, 
+    paymentMethodOverride, paymentStatus, paymentId, razorpayOrderId,
+    donation, gifting
+  } = req.body;
 
-  const order = await createOrder(req.user.id, addressId, couponCode, discountAmount);
+  const donationAmount = donation?.enabled ? donation.amount : 0;
+  const giftingAmount = gifting?.enabled ? gifting.amount : 0;
+  const giftingMessage = gifting?.enabled ? gifting.message : null;
+
+  const order = await createOrder(
+    req.user.id, 
+    addressId, 
+    couponCode, 
+    discountAmount,
+    paymentMethodOverride || 'cod',
+    (paymentStatus || 'pending').toLowerCase(),
+    paymentId,
+    razorpayOrderId,
+    donationAmount,
+    giftingAmount,
+    giftingMessage
+  );
 
   res.status(201).json({
     message: 'Order placed successfully!',
     order,
   });
+}
+
+/**
+ * POST /api/orders/razorpay/create
+ */
+export async function createRazorpayOrder(req, res) {
+  if (!razorpayInstance) {
+    return res.status(500).json({ error: 'Razorpay is not configured on the server.' });
+  }
+
+  const { amount } = req.body;
+  
+  try {
+    const options = {
+      amount: Math.round(amount * 100), // amount in the smallest currency unit
+      currency: "INR",
+      receipt: `receipt_order_${Date.now()}`
+    };
+    
+    const order = await razorpayInstance.orders.create(options);
+    res.json({ order });
+  } catch (err) {
+    console.error('Razorpay Error:', err);
+    res.status(500).json({ error: 'Failed to create Razorpay order.' });
+  }
+}
+
+/**
+ * POST /api/orders/razorpay/verify
+ */
+export async function verifyRazorpayPayment(req, res) {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+  const body = razorpay_order_id + "|" + razorpay_payment_id;
+  const expectedSignature = crypto
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    .update(body.toString())
+    .digest("hex");
+
+  if (expectedSignature === razorpay_signature) {
+    res.json({ success: true, message: "Payment verified successfully" });
+  } else {
+    res.status(400).json({ success: false, error: "Invalid signature" });
+  }
 }
 
 /**
