@@ -10,6 +10,8 @@ import Cart from './pages/Cart';
 import ProductDetail from './pages/ProductDetail';
 import Shop from './pages/Shop';
 import NotFound from './pages/NotFound';
+import RetailerDashboard from './pages/RetailerDashboard';
+import DistributorDashboard from './pages/DistributorDashboard';
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './context/AuthContext';
@@ -55,6 +57,8 @@ function App() {
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/shop" element={<Shop />} />
+                <Route path="/retailer/dashboard" element={<RetailerDashboard />} />
+                <Route path="/distributor/dashboard" element={<DistributorDashboard />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </WishlistProvider>

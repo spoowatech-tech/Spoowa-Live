@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X, ChevronRight, GraduationCap, Award, Briefcase } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import boardKhanna from "@/assets/board_khanna.jpg";
 import boardOberoi from "@/assets/board_oberoi.jpg";
 import boardBidhuri from "@/assets/board_bidhuri.png";
@@ -111,6 +112,30 @@ const advisors = [
   }
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.15
+    }
+  }
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  show: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 70,
+      damping: 16
+    }
+  }
+};
+
 export function BoardOfAdvisors() {
   const [selectedAdvisor, setSelectedAdvisor] = useState(null);
 
@@ -123,17 +148,24 @@ export function BoardOfAdvisors() {
         <h2 className="text-display text-4xl leading-[0.95] sm:text-5xl uppercase">
           Board of Advisors
         </h2>
-        <p className="mt-4 mx-auto max-w-2xl text-base text-gray-500">
+        <p className="mt-4 mx-auto max-w-2xl text-base text-gray-500 font-medium">
           Guiding SPOOWA's vision with world-class expertise in sports science, clinical medicine, elite athletics, and startup growth.
         </p>
       </div>
 
       {/* Advisory Grid */}
-      <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: "-80px" }}
+        className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
+      >
         {advisors.map((advisor) => (
-          <div 
+          <motion.div 
             key={advisor.id} 
-            className="group relative flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+            variants={cardVariants}
+            className="group relative flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white p-3 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_12px_40px_rgba(212,175,55,0.14)] hover:border-[#D4AF37]/30"
           >
             {/* Image Wrapper */}
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-gray-50">
@@ -142,7 +174,7 @@ export function BoardOfAdvisors() {
                 alt={advisor.name}
                 className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-102"
               />
-              <div className="absolute top-4 left-4 rounded-full bg-white/95 px-3.5 py-1 text-[9px] font-bold tracking-wider text-[#D4AF37] uppercase shadow-sm backdrop-blur-sm">
+              <div className="absolute top-4 left-4 rounded-full bg-white/95 px-3.5 py-1 text-[9px] font-extrabold tracking-wider text-[#D4AF37] uppercase shadow-sm backdrop-blur-sm">
                 {advisor.badge}
               </div>
             </div>
@@ -150,71 +182,81 @@ export function BoardOfAdvisors() {
             {/* Body */}
             <div className="flex flex-col flex-grow p-4">
               <h3 className="text-lg font-bold text-gray-900 group-hover:text-[#D4AF37] transition-colors leading-tight">{advisor.name}</h3>
-              <p className="mt-1 text-[11px] font-bold tracking-wider text-gray-400 uppercase">{advisor.role}</p>
-              <p className="mt-3 text-xs leading-relaxed text-gray-500 line-clamp-3">
+              <p className="mt-1 text-[11px] font-extrabold tracking-wider text-gray-400 uppercase">{advisor.role}</p>
+              <p className="mt-3 text-xs leading-relaxed text-gray-500 line-clamp-3 font-medium">
                 {advisor.shortBio}
               </p>
               
               <button 
                 onClick={() => setSelectedAdvisor(advisor)}
-                className="mt-6 flex items-center justify-between rounded-full bg-gray-50 hover:bg-[#FFFDF5] px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-gray-800 hover:text-[#D4AF37] border border-gray-100 hover:border-[#D4AF37]/35 transition-all w-full mt-auto"
+                className="mt-6 flex items-center justify-between rounded-full bg-gray-50 hover:bg-[#FFFDF5] px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-gray-800 hover:text-[#D4AF37] border border-gray-100 hover:border-[#D4AF37]/35 transition-all w-full mt-auto cursor-pointer"
               >
                 <span>Read Biography</span>
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Modal Popup Overlay */}
-      {selectedAdvisor && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-modal-fade"
-          onClick={() => setSelectedAdvisor(null)}
-        >
-          {/* Modal Container */}
-          <div 
-            className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 max-h-[85vh] overflow-y-auto animate-modal-slide"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {selectedAdvisor && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setSelectedAdvisor(null)}
           >
-            {/* Close button */}
-            <button 
-              onClick={() => setSelectedAdvisor(null)}
-              className="absolute top-4 right-4 rounded-full p-2 bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors z-10"
-              aria-label="Close modal"
+            {/* Modal Container */}
+            <motion.div 
+              initial={{ scale: 0.95, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 20, opacity: 0 }}
+              transition={{ type: "spring", duration: 0.45, bounce: 0.12 }}
+              className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 max-h-[85vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
             >
-              <X className="h-5 w-5" />
-            </button>
+              {/* Close button */}
+              <button 
+                onClick={() => setSelectedAdvisor(null)}
+                className="absolute top-4 right-4 rounded-full p-2 bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors z-10 cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X className="h-5 w-5" />
+              </button>
 
-            {/* Left side: Photo */}
-            <div className="w-full md:w-[38%] shrink-0">
-              <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-gray-50 border border-gray-100">
-                <img 
-                  src={selectedAdvisor.image} 
-                  alt={selectedAdvisor.name} 
-                  className="h-full w-full object-cover object-top"
-                />
+              {/* Left side: Photo */}
+              <div className="w-full md:w-[38%] shrink-0">
+                <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm">
+                  <img 
+                    src={selectedAdvisor.image} 
+                    alt={selectedAdvisor.name} 
+                    className="h-full w-full object-cover object-top"
+                  />
+                </div>
+                <div className="mt-4 inline-block rounded-full bg-[#FFFDF5] border border-[#D4AF37]/25 px-3.5 py-1.2 text-[10px] font-extrabold tracking-wider text-[#D4AF37] uppercase">
+                  {selectedAdvisor.badge}
+                </div>
               </div>
-              <div className="mt-3 inline-block rounded-full bg-[#FFFDF5] border border-[#D4AF37]/20 px-3 py-1 text-[10px] font-bold tracking-wider text-[#D4AF37] uppercase">
-                {selectedAdvisor.badge}
-              </div>
-            </div>
 
-            {/* Right side: Detailed Biography */}
-            <div className="flex-1 flex flex-col justify-start">
-              <h3 className="text-2xl font-bold text-gray-900 tracking-tight leading-tight">{selectedAdvisor.name}</h3>
-              <p className="text-xs font-bold tracking-wider text-[#D4AF37] uppercase mt-1.5">{selectedAdvisor.role}</p>
-              
-              <div className="border-t border-gray-100 my-4"></div>
-              
-              <div className="overflow-y-auto flex-grow pr-1">
-                {selectedAdvisor.expandedContent}
+              {/* Right side: Detailed Biography */}
+              <div className="flex-1 flex flex-col justify-start">
+                <h3 className="text-2xl font-bold text-gray-900 tracking-tight leading-tight">{selectedAdvisor.name}</h3>
+                <p className="text-xs font-bold tracking-wider text-[#D4AF37] uppercase mt-2">{selectedAdvisor.role}</p>
+                
+                <div className="border-t border-gray-100 my-4"></div>
+                
+                <div className="overflow-y-auto flex-grow pr-1">
+                  {selectedAdvisor.expandedContent}
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

@@ -1,12 +1,38 @@
-import heroCans from "@/assets/hero-cans.jpg";
+import cansOnRock from "@/assets/cans_on_rock.png";
 import { ArrowRight, Heart, Zap, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-tr from-orange-50 via-amber-50 to-blue-50 py-12 sm:py-16 lg:py-24 text-gray-900 border-b border-gray-100">
+    <section className="relative overflow-hidden bg-gradient-to-tr from-[#FFF7EA] via-[#FFF0F2] to-[#E9FAFC] py-12 sm:py-16 lg:py-24 text-gray-900 border-b border-gray-100">
       {/* Soft pastel glowing ambient blobs */}
-      <div className="absolute top-[-10%] left-[-15%] w-[600px] h-[600px] rounded-full bg-orange-300/15 blur-[120px] pointer-events-none animate-pulse"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-[#D4AF37]/15 blur-[120px] pointer-events-none"></div>
+      <motion.div
+        animate={{
+          scale: [1, 1.15, 1],
+          x: [0, 40, 0],
+          y: [0, -30, 0]
+        }}
+        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-[-10%] left-[-15%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-amber-400/20 to-orange-500/20 blur-[130px] pointer-events-none"
+      />
+      <motion.div
+        animate={{
+          scale: [1, 1.1, 1],
+          x: [0, -35, 0],
+          y: [0, 40, 0]
+        }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-br from-pink-500/15 to-purple-600/10 blur-[130px] pointer-events-none"
+      />
+      <motion.div
+        animate={{
+          scale: [1, 1.2, 1],
+          x: [15, -15, 15],
+          y: [-25, 25, -25]
+        }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-[30%] left-[20%] w-[450px] h-[450px] rounded-full bg-gradient-to-br from-cyan-400/10 to-blue-500/10 blur-[120px] pointer-events-none"
+      />
 
       <div className="relative mx-auto grid max-w-7xl gap-12 px-4 pb-20 sm:px-6 lg:grid-cols-12 lg:gap-8 lg:px-8 lg:pb-28">
         {/* Left Column: Copy & Actions */}
@@ -66,14 +92,55 @@ export function Hero() {
           <div className="absolute right-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-[#D4AF37] px-3.5 py-1.5 text-[10px] font-extrabold tracking-wider text-white shadow-md uppercase">
             <Heart className="h-3.5 w-3.5 fill-current text-white animate-pulse" /> Made in India
           </div>
-          <div className="w-full relative rounded-[32px] overflow-hidden p-2 bg-white/20 border border-white/30 backdrop-blur-sm shadow-sm">
-            <img
-              src={heroCans}
-              alt="Spoowa hydration cans splashing water"
-              width={1536}
-              height={1024}
-              className="w-full animate-float drop-shadow-[0_15px_35px_rgba(212,175,55,0.12)] rounded-2xl"
-            />
+
+          {/* Floating Feature Badge 1: Raw Honey */}
+          <div className="absolute -left-2 top-[10%] z-25 bg-white/95 backdrop-blur-md border border-[#F4B000]/25 rounded-2xl px-4 py-3.5 shadow-[0_12px_36px_rgba(244,176,0,0.14)] flex items-center gap-2.5 animate-float hover:scale-105 transition-transform cursor-pointer" style={{ animationDelay: "0.2s" }}>
+            <span className="text-xl">🍯</span>
+            <div>
+              <span className="text-[9px] font-extrabold tracking-wider text-gray-400 block uppercase leading-none mb-1">Naturally Sweetened</span>
+              <span className="text-xs font-black text-gray-800 block leading-none">Raw Honey Base</span>
+            </div>
+          </div>
+
+          {/* Floating Feature Badge 2: Electrolytes */}
+          <div className="absolute -right-2 top-[35%] z-25 bg-white/95 backdrop-blur-md border border-blue-200/40 rounded-2xl px-4 py-3.5 shadow-[0_12px_36px_rgba(59,130,246,0.12)] flex items-center gap-2.5 animate-float hover:scale-105 transition-transform cursor-pointer" style={{ animationDelay: "1.2s" }}>
+            <span className="text-xl">⚡</span>
+            <div>
+              <span className="text-[9px] font-extrabold tracking-wider text-gray-400 block uppercase leading-none mb-1">Optimal Recovery</span>
+              <span className="text-xs font-black text-gray-800 block leading-none">Electrolyte Boost</span>
+            </div>
+          </div>
+
+          {/* Floating Feature Badge 3: Monk Fruit */}
+          <div className="absolute left-[12%] bottom-[2%] z-25 bg-white/95 backdrop-blur-md border border-emerald-200/40 rounded-2xl px-4 py-3.5 shadow-[0_12px_36px_rgba(16,185,129,0.12)] flex items-center gap-2.5 animate-float hover:scale-105 transition-transform cursor-pointer" style={{ animationDelay: "2.2s" }}>
+            <span className="text-xl">🍃</span>
+            <div>
+              <span className="text-[9px] font-extrabold tracking-wider text-gray-400 block uppercase leading-none mb-1">Zero Added Sugar</span>
+              <span className="text-xs font-black text-gray-800 block leading-none">Monk Fruit Sweetened</span>
+            </div>
+          </div>
+
+          <div className="w-full relative flex items-center justify-center p-2">
+            {/* Ambient glows behind the rock setup */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-pink-500/10 rounded-full blur-[90px] pointer-events-none" />
+            <div className="absolute bottom-10 left-1/4 w-36 h-36 bg-[#F4B000]/10 rounded-full blur-[50px] pointer-events-none" />
+
+            <motion.div
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: [0, -10, 0] }}
+              whileHover={{ scale: 1.03, filter: "drop-shadow(0 20px 45px rgba(244,176,0,0.25))" }}
+              transition={{
+                animate: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+                scale: { type: "spring", stiffness: 100, damping: 15 }
+              }}
+              className="relative z-10 w-full max-w-[500px] cursor-pointer filter drop-shadow-[0_12px_28px_rgba(43,29,18,0.15)]"
+            >
+              <img 
+                src={cansOnRock} 
+                alt="SPOOWA cans setup on wet rock with ice, oranges, and lemons" 
+                className="w-full h-auto object-contain select-none" 
+              />
+            </motion.div>
           </div>
         </div>
       </div>

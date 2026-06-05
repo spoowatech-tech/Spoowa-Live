@@ -89,8 +89,9 @@ export function Navbar() {
     { label: "Home", to: "/" },
     { label: "Shop", to: "/shop" },
     { label: "About Us", to: "/about" },
-    { label: "Ingredients", to: "/#ingredients" },
     { label: "Team", to: "/team" },
+    { label: "Retailer Portal", to: "/retailer/dashboard" },
+    { label: "Distributor Portal", to: "/distributor/dashboard" },
     { label: "Contact", to: "/#footer" },
   ];
 
@@ -196,6 +197,20 @@ export function Navbar() {
                     </div>
                   </div>
                   <div className="py-1.5">
+                    <Link
+                      to="/retailer/dashboard"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-[#FFF8E8] hover:text-[#D88A00] transition-colors"
+                    >
+                      <Package className="h-4 w-4 shrink-0" /> Retailer Portal
+                    </Link>
+                    <Link
+                      to="/distributor/dashboard"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-[#FFF8E8] hover:text-[#D88A00] transition-colors"
+                    >
+                      <Truck className="h-4 w-4 shrink-0" /> Distributor Portal
+                    </Link>
                     <button className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-[#FFF8E8] hover:text-[#D88A00] transition-colors">
                       <Package className="h-4 w-4 shrink-0" /> My Orders
                     </button>
@@ -332,6 +347,22 @@ export function Navbar() {
                         <p className="text-sm font-bold text-[#2B1D12] truncate">{user.name}</p>
                         <p className="text-xs text-gray-500 truncate">{user.email}</p>
                       </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mt-1 mb-2">
+                      <Link
+                        to="/retailer/dashboard"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center justify-center gap-1.5 rounded-xl border border-gray-150 py-2.5 text-xs font-black text-gray-700 bg-gray-50 hover:bg-[#FFF8E8] transition-colors"
+                      >
+                        🏪 Retailer
+                      </Link>
+                      <Link
+                        to="/distributor/dashboard"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center justify-center gap-1.5 rounded-xl border border-gray-150 py-2.5 text-xs font-black text-gray-700 bg-gray-50 hover:bg-[#FFF8E8] transition-colors"
+                      >
+                        🚚 Distributor
+                      </Link>
                     </div>
                     <button
                       onClick={() => { logout(); setOpen(false); }}

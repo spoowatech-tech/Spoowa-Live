@@ -216,6 +216,22 @@
     transform: translateY(-1px);
   }
   .btn-gold:active { transform: scale(0.98); }
+  
+  .glow-gold {
+    filter: drop-shadow(0 0 12px rgba(244, 176, 0, 0.45));
+  }
+  .glow-red {
+    filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.45));
+  }
+  .glow-accent {
+    filter: drop-shadow(0 0 15px var(--accent));
+  }
+  .glass-card-dark {
+    background: rgba(18, 13, 8, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
 }
 
 /* ── Scrollbar ── */
