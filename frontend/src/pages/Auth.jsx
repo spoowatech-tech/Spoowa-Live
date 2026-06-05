@@ -70,21 +70,23 @@ function GoogleIcon() {
   );
 }
 
-function PanelLogo() {
-  return (
-    <div className="inline-flex rounded-[22px] bg-transparent px-0 py-0 shadow-none backdrop-blur-0">
-      <img src={logo} alt="SPOOWA Logo" className="h-10 w-auto max-w-[190px] object-contain" />
-    </div>
-  );
-}
+// function PanelLogo() {
+//   return (
+//     <div className="inline-flex rounded-[22px] bg-transparent px-0 py-0 shadow-none backdrop-blur-0">
+//       <img src={logo} alt="SPOOWA Logo" className="h-10 w-auto max-w-[190px] object-contain" />
+//     </div>
+//   );
+// }
 
-function MarketingFeature({ icon: Icon, title, description, index }) {
+function MarketingFeature({ icon: Icon, title, description, index, compact = false }) {
   return (
-    <motion.div custom={index} variants={fieldVariants} className="flex items-center gap-4 rounded-[24px] border border-white/70 bg-white/60 p-3.5 shadow-[0_16px_45px_rgba(92,55,0,0.08)] backdrop-blur-xl">
-      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[18px] bg-white text-[#E79B00] shadow-[0_12px_30px_rgba(244,176,0,0.15)]"><Icon className="h-6 w-6" strokeWidth={2.2} /></span>
+    <motion.div custom={index} variants={fieldVariants} className={`flex items-center border border-white/60 bg-white/65 shadow-[0_12px_36px_rgba(92,55,0,0.10)] backdrop-blur-2xl hover:bg-white/80 transition-all duration-300 ${compact ? "gap-3 rounded-[20px] p-3 sm:p-3.5" : "gap-4 rounded-[24px] p-4"}`}>
+      <span className={`grid shrink-0 place-items-center bg-gradient-to-br from-white to-[#FFF8E8] text-[#E79B00] shadow-[0_8px_24px_rgba(244,176,0,0.18)] border border-[#F4B000]/15 ${compact ? "h-10 w-10 rounded-[14px]" : "h-12 w-12 rounded-[18px]"}`}>
+        <Icon className={compact ? "h-5 w-5" : "h-6 w-6"} strokeWidth={2.2} />
+      </span>
       <span>
-        <span className="block text-[15px] font-extrabold leading-tight text-[#2B1D12]">{title}</span>
-        <span className="mt-1 block text-sm leading-snug text-[#4B3A2A]">{description}</span>
+        <span className={`block font-extrabold leading-tight text-[#2B1D12] ${compact ? "text-sm" : "text-[15px]"}`}>{title}</span>
+        <span className={`block text-[#4B3A2A]/80 leading-snug ${compact ? "text-xs mt-0.5" : "text-sm mt-1"}`}>{description}</span>
       </span>
     </motion.div>
   );
@@ -96,25 +98,24 @@ function MarketingPanel({ mode }) {
   const direction = isSignup ? 1 : -1;
 
   return (
-    <motion.section layout transition={panelTransition} className={`relative order-2 min-h-[620px] w-full min-w-0 overflow-hidden bg-[#FFF8E8] p-7 text-[#2B1D12] sm:p-10 lg:min-h-0 lg:basis-[45%] lg:p-12 ${isSignup ? "lg:order-2" : "lg:order-1"}`}>
+    <motion.section layout transition={panelTransition} className={`relative order-2 min-h-[520px] w-full min-w-0 overflow-hidden bg-gradient-to-br from-[#FFF8E8] via-[#FFFDF5] to-[#FFF3D0] text-[#2B1D12] lg:min-h-0 lg:basis-[44%] p-6 sm:p-7 lg:p-8 ${isSignup ? "lg:order-2" : "lg:order-1"}`}>
       <img src={honeyPanel} alt="" className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-80" />
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(130deg,rgba(255,248,232,0.80),rgba(255,253,247,0.40)_50%,rgba(244,176,0,0.12))]" />
       <div aria-hidden="true" className="pointer-events-none absolute -left-16 top-28 h-64 w-56 opacity-55" style={honeycombBackground} />
       <div aria-hidden="true" className="pointer-events-none absolute -right-10 bottom-2 h-72 w-72 opacity-45" style={honeycombBackground} />
 
-      <div className="relative z-10 flex h-full min-h-[540px] flex-col">
-        <PanelLogo />
+      <div className="relative z-10 flex h-full flex-col">
         <AnimatePresence mode="wait" custom={direction}>
-          <motion.div key={mode} custom={direction} variants={contentVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }} className="mt-16 max-w-[390px] sm:mt-20 lg:mt-[118px]">
-            <h1 className="text-4xl font-black leading-[1.05] tracking-normal text-[#2B1D12] sm:text-5xl">
+          <motion.div key={mode} custom={direction} variants={contentVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }} className="max-w-[360px] mt-8 sm:mt-10 lg:mt-12">
+            <h1 className="font-black leading-[1.05] tracking-tight text-[#2B1D12] font-display text-3xl sm:text-[2.5rem]">
               {mode === 'forgot' ? "Reset Password" : isSignup ? "Create Account" : "Welcome Back!"}
             </h1>
-            <p className="mt-5 max-w-[360px] text-[17px] leading-8 text-[#2B1D12]/90">
+            <p className="max-w-[360px] text-[#2B1D12]/90 mt-3 text-sm sm:text-base leading-relaxed">
               {mode === 'forgot' ? "Don't worry, it happens to the best of us. Let's get you back into your account." : isSignup ? "Join SPOOWA to save favorites, track orders, and checkout faster." : "Glad to see you again. Login to continue your wellness journey."}
             </p>
             {mode !== 'forgot' && (
-              <motion.div initial="hidden" animate="show" className={`mt-8 grid gap-4 ${isSignup ? "sm:grid-cols-2 lg:grid-cols-1" : ""}`}>
-                {benefits.map((benefit, index) => <MarketingFeature key={benefit.title} {...benefit} index={index} />)}
+              <motion.div initial="hidden" animate="show" className="grid mt-6 gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                {benefits.map((benefit, index) => <MarketingFeature key={benefit.title} {...benefit} index={index} compact={true} />)}
               </motion.div>
             )}
           </motion.div>
@@ -142,14 +143,19 @@ function AuthTabs({ mode, setMode }) {
   );
 }
 
-function InputField({ icon: Icon, type = "text", placeholder, autoComplete, isPassword, showValue, onToggle, value, onChange, index, error, prefix }) {
+function InputField({ icon: Icon, type = "text", placeholder, autoComplete, isPassword, showValue, onToggle, value, onChange, index, error, prefix, compact = false }) {
+  const heightClass = compact ? "h-11" : "h-14";
+  const pbClass = compact ? "pb-4" : "pb-6";
+  const iconHeightClass = compact ? "h-11" : "h-14";
+  const prefixHeightClass = compact ? "h-11" : "h-14";
+
   return (
-    <motion.div variants={fieldVariants} custom={index} className="relative group pb-6">
-      <div className={`pointer-events-none absolute inset-y-0 top-0 h-14 left-0 flex items-center pl-4 transition-colors ${error ? 'text-red-500' : 'text-[#8C93A3] group-focus-within:text-[#F4B000]'}`}>
+    <motion.div variants={fieldVariants} custom={index} className={`relative group ${pbClass}`}>
+      <div className={`pointer-events-none absolute inset-y-0 top-0 ${iconHeightClass} left-0 flex items-center pl-4 transition-colors ${error ? 'text-red-500' : 'text-[#8C93A3] group-focus-within:text-[#F4B000]'}`}>
         <Icon className="h-5 w-5" />
       </div>
       {prefix && (
-        <span className="absolute left-[46px] top-0 h-14 flex items-center text-[15px] font-bold text-[#4B3A2A] pointer-events-none select-none">{prefix}</span>
+        <span className={`absolute ${compact ? 'left-11' : 'left-[46px]'} top-0 ${prefixHeightClass} flex items-center text-[15px] font-bold text-[#4B3A2A] pointer-events-none select-none`}>{prefix}</span>
       )}
       <input
         type={isPassword ? (showValue ? "text" : "password") : type}
@@ -158,24 +164,25 @@ function InputField({ icon: Icon, type = "text", placeholder, autoComplete, isPa
         value={value}
         onChange={onChange}
         maxLength={prefix ? 10 : undefined}
-        className={`h-14 w-full rounded-[18px] border-2 bg-[#FAFAFA] ${prefix ? 'pl-[90px]' : 'pl-[46px]'} pr-12 text-[15px] font-bold text-[#111827] shadow-sm outline-none transition-all placeholder:text-[#9DA3B0] placeholder:font-medium focus:bg-white ${error ? 'border-red-500 focus:border-red-500 focus:shadow-[0_4px_16px_rgba(239,68,68,0.12)]' : 'border-[#E9E3D6] hover:border-[#D6CFBF] focus:border-[#F4B000] focus:shadow-[0_4px_16px_rgba(244,176,0,0.12)]'}`}
+        className={`${heightClass} w-full rounded-[16px] border-2 bg-[#FAFAFA] ${prefix ? (compact ? 'pl-20' : 'pl-[90px]') : 'pl-[46px]'} pr-12 text-[15px] font-bold text-[#111827] shadow-sm outline-none transition-all placeholder:text-[#9DA3B0] placeholder:font-medium focus:bg-white ${error ? 'border-red-500 focus:border-red-500 focus:shadow-[0_4px_16px_rgba(239,68,68,0.12)]' : 'border-[#E9E3D6] hover:border-[#D6CFBF] focus:border-[#F4B000] focus:shadow-[0_4px_16px_rgba(244,176,0,0.12)]'}`}
       />
       {isPassword && (
         <button
           type="button"
           aria-label={showValue ? "Hide password" : "Show password"}
           onPointerDown={(e) => { e.preventDefault(); onToggle(); }}
-          className="absolute right-5 top-3 grid h-8 w-8 place-items-center rounded-full text-[#777D8E] cursor-pointer transition hover:bg-[#FFF8E8] hover:text-[#2B1D12]"
+          className={`absolute ${compact ? 'right-4 top-1.5' : 'right-5 top-3'} grid h-8 w-8 place-items-center rounded-full text-[#777D8E] cursor-pointer transition hover:bg-[#FFF8E8] hover:text-[#2B1D12]`}
         >
           {showValue ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
         </button>
       )}
-      {error && <span className="absolute bottom-1 left-2 text-xs font-semibold text-red-500">{error}</span>}
+      {error && <span className={`absolute ${compact ? 'bottom-0' : 'bottom-1'} left-2 text-xs font-semibold text-red-500`}>{error}</span>}
     </motion.div>
   );
 }
 
-function GradientButton({ children, disabled, onClick, type = "submit" }) {
+function GradientButton({ children, disabled, onClick, type = "submit", compact = false }) {
+  const heightClass = compact ? "h-11 text-sm rounded-xl" : "h-[58px] text-[15px] rounded-2xl";
   return (
     <motion.button
       variants={fieldVariants}
@@ -184,7 +191,7 @@ function GradientButton({ children, disabled, onClick, type = "submit" }) {
       onClick={onClick}
       whileHover={disabled ? {} : { y: -1 }}
       whileTap={disabled ? {} : { scale: 0.985 }}
-      className={`h-16 w-full min-w-0 rounded-2xl bg-gradient-to-r from-[#EFA300] via-[#F4B000] to-[#FFC83D] px-5 text-base font-extrabold text-white transition duration-300 ${disabled ? 'opacity-50 cursor-not-allowed shadow-none' : 'cursor-pointer shadow-[0_22px_44px_rgba(244,176,0,0.32)] hover:shadow-[0_26px_52px_rgba(244,176,0,0.40)]'}`}
+      className={`${heightClass} w-full min-w-0 bg-gradient-to-r from-[#EFA300] via-[#F4B000] to-[#FFC83D] px-5 font-extrabold text-white tracking-wide transition duration-300 ${disabled ? 'opacity-50 cursor-not-allowed shadow-none' : 'cursor-pointer shadow-[0_16px_40px_rgba(244,176,0,0.36)] hover:shadow-[0_20px_50px_rgba(244,176,0,0.44)] hover:-translate-y-0.5'}`}
     >
       {children}
     </motion.button>
@@ -201,7 +208,7 @@ function Divider() {
   );
 }
 
-function GoogleButton() {
+function GoogleButton({ compact = false }) {
   const { loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -218,8 +225,10 @@ function GoogleButton() {
     onError: () => {}
   });
 
+  const heightClass = compact ? "h-11 text-sm rounded-xl gap-2" : "h-16 text-base rounded-2xl gap-3";
+
   return (
-    <motion.button variants={fieldVariants} type="button" onClick={() => googleLogin()} disabled={isLoading} whileHover={isLoading ? {} : { y: -1 }} whileTap={isLoading ? {} : { scale: 0.985 }} className={`flex h-16 w-full min-w-0 items-center justify-center gap-3 rounded-2xl border border-[#DDD8CF] bg-white px-4 text-base font-extrabold text-[#111827] transition duration-300 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer shadow-[0_16px_38px_rgba(43,29,18,0.04)] hover:border-[#CFC6B7] hover:bg-[#FFFDF7]'}`}>
+    <motion.button variants={fieldVariants} type="button" onClick={() => googleLogin()} disabled={isLoading} whileHover={isLoading ? {} : { y: -1 }} whileTap={isLoading ? {} : { scale: 0.985 }} className={`flex ${heightClass} w-full min-w-0 items-center justify-center border border-[#DDD8CF] bg-white px-4 font-extrabold text-[#111827] transition duration-300 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer shadow-[0_16px_38px_rgba(43,29,18,0.04)] hover:border-[#CFC6B7] hover:bg-[#FFFDF7]'}`}>
       <GoogleIcon />{isLoading ? "Connecting..." : "Continue with Google"}
     </motion.button>
   );
@@ -266,17 +275,17 @@ function LoginForm({ setMode }) {
   };
 
   return (
-    <motion.form key="login" custom={-1} variants={contentVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }} onSubmit={handleSubmit} className="mt-8" noValidate>
-      <motion.div initial="hidden" animate="show" className="grid gap-2">
-        <InputField icon={Mail} type="email" placeholder="Enter your email" autoComplete="email" value={email} onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({...prev, email: ''})); }} index={0} error={errors.email} />
-        <InputField icon={LockKeyhole} type="password" placeholder="Enter your password" autoComplete="current-password" isPassword showValue={showPassword} onToggle={() => setShowPassword((value) => !value)} value={password} onChange={(e) => { setPassword(e.target.value); setErrors(prev => ({...prev, password: ''})); }} index={1} error={errors.password} />
+    <motion.form key="login" custom={-1} variants={contentVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }} onSubmit={handleSubmit} className="mt-4" noValidate>
+      <motion.div initial="hidden" animate="show" className="grid gap-1">
+        <InputField icon={Mail} type="email" placeholder="Enter your email" autoComplete="email" value={email} onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({...prev, email: ''})); }} index={0} error={errors.email} compact />
+        <InputField icon={LockKeyhole} type="password" placeholder="Enter your password" autoComplete="current-password" isPassword showValue={showPassword} onToggle={() => setShowPassword((value) => !value)} value={password} onChange={(e) => { setPassword(e.target.value); setErrors(prev => ({...prev, password: ''})); }} index={1} error={errors.password} compact />
         <motion.div variants={fieldVariants} custom={2} className="flex justify-end mb-2">
           <button type="button" onClick={() => setMode('forgot')} className="text-sm font-bold text-[#D88A00] cursor-pointer transition hover:text-[#2B1D12]">Forgot Password?</button>
         </motion.div>
-        <GradientButton disabled={isSubmitting}>{isSubmitting ? "Logging in..." : "Login"}</GradientButton>
-        <div className="mt-4"><Divider /></div>
-        <div className="mt-4"><GoogleButton /></div>
-        <motion.p variants={fieldVariants} custom={6} className="text-center text-sm font-medium text-[#6F7685] mt-6">
+        <GradientButton disabled={isSubmitting} compact>{isSubmitting ? "Logging in..." : "Login"}</GradientButton>
+        <div className="mt-2.5"><Divider /></div>
+        <div className="mt-2.5"><GoogleButton compact /></div>
+        <motion.p variants={fieldVariants} custom={6} className="text-center text-sm font-medium text-[#6F7685] mt-3">
           Don't have an account? <button type="button" onClick={() => setMode("signup")} className="font-extrabold text-[#D88A00] cursor-pointer transition hover:text-[#2B1D12]">Sign Up</button>
         </motion.p>
       </motion.div>
@@ -363,8 +372,8 @@ function SignupForm({ setMode }) {
       <motion.form key="verify-otp" custom={1} variants={contentVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }} onSubmit={handleVerifyOtp} className="mt-7">
         <motion.div initial="hidden" animate="show" className="grid gap-4">
           <p className="text-sm font-medium text-[#4B3A2A] mb-2 text-center">We've sent a 6-digit verification code to <span className="font-bold text-[#D88A00]">+91 {phone}</span></p>
-          <InputField icon={KeyRound} placeholder="6-digit verification code" value={code} onChange={(e) => { setCode(e.target.value); setOtpError(""); }} index={0} error={otpError} />
-          <GradientButton disabled={isSubmitting}>{isSubmitting ? "Verifying..." : "Verify & Create Account"}</GradientButton>
+          <InputField icon={KeyRound} placeholder="6-digit verification code" value={code} onChange={(e) => { setCode(e.target.value); setOtpError(""); }} index={0} error={otpError} compact />
+          <GradientButton disabled={isSubmitting} compact>{isSubmitting ? "Verifying..." : "Verify & Create Account"}</GradientButton>
           <motion.p variants={fieldVariants} custom={2} className="text-center text-sm font-medium text-[#6F7685] mt-4">
             Didn't receive the code? <button type="button" onClick={handleRequestOtp} disabled={isSubmitting} className={`font-extrabold text-[#D88A00] transition hover:text-[#2B1D12] ${isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}>Resend Code</button>
           </motion.p>
@@ -379,15 +388,17 @@ function SignupForm({ setMode }) {
   return (
     <motion.form key="signup" custom={1} variants={contentVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }} onSubmit={handleRequestOtp} className="mt-4" noValidate>
       <motion.div initial="hidden" animate="show" className="grid gap-1">
-        <InputField icon={UserRound} placeholder="Full Name" autoComplete="name" value={name} onChange={(e) => { setName(e.target.value); clearError("name"); }} index={0} error={errors.name} />
-        <InputField icon={Mail} type="email" placeholder="Email Address" autoComplete="email" value={email} onChange={(e) => { setEmail(e.target.value); clearError("email"); }} index={1} error={errors.email} />
-        <InputField icon={Phone} type="tel" placeholder="Enter 10-digit mobile number" prefix="+91" value={phone} onChange={(e) => { const v = e.target.value.replace(/\D/g, '').slice(0, 10); setPhone(v); clearError("phone"); }} index={2} error={errors.phone} />
-        <InputField icon={LockKeyhole} type="password" placeholder="Password" autoComplete="new-password" isPassword showValue={showPassword} onToggle={() => setShowPassword(v => !v)} value={password} onChange={(e) => { setPassword(e.target.value); clearError("password"); }} index={3} error={errors.password} />
-        <InputField icon={LockKeyhole} type="password" placeholder="Confirm Password" autoComplete="new-password" isPassword showValue={showConfirm} onToggle={() => setShowConfirm(v => !v)} value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); clearError("confirmPassword"); }} index={4} error={errors.confirmPassword} />
-        <GradientButton disabled={isSubmitting}>{isSubmitting ? "Sending Code..." : "Continue"}</GradientButton>
-        <div className="mt-3"><Divider /></div>
-        <div className="mt-3"><GoogleButton /></div>
-        <motion.p variants={fieldVariants} custom={7} className="text-center text-sm font-medium text-[#6F7685] mt-4">
+        <InputField icon={UserRound} placeholder="Full Name" autoComplete="name" value={name} onChange={(e) => { setName(e.target.value); clearError("name"); }} index={0} error={errors.name} compact />
+        <InputField icon={Mail} type="email" placeholder="Email Address" autoComplete="email" value={email} onChange={(e) => { setEmail(e.target.value); clearError("email"); }} index={1} error={errors.email} compact />
+        <InputField icon={Phone} type="tel" placeholder="Enter 10-digit mobile number" prefix="+91" value={phone} onChange={(e) => { const v = e.target.value.replace(/\D/g, '').slice(0, 10); setPhone(v); clearError("phone"); }} index={2} error={errors.phone} compact />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
+          <InputField icon={LockKeyhole} type="password" placeholder="Password" autoComplete="new-password" isPassword showValue={showPassword} onToggle={() => setShowPassword(v => !v)} value={password} onChange={(e) => { setPassword(e.target.value); clearError("password"); }} index={3} error={errors.password} compact />
+          <InputField icon={LockKeyhole} type="password" placeholder="Confirm Password" autoComplete="new-password" isPassword showValue={showConfirm} onToggle={() => setShowConfirm(v => !v)} value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); clearError("confirmPassword"); }} index={4} error={errors.confirmPassword} compact />
+        </div>
+        <GradientButton disabled={isSubmitting} compact>{isSubmitting ? "Sending Code..." : "Continue"}</GradientButton>
+        <div className="mt-2.5"><Divider /></div>
+        <div className="mt-2.5"><GoogleButton compact /></div>
+        <motion.p variants={fieldVariants} custom={7} className="text-center text-sm font-medium text-[#6F7685] mt-3">
           Already have an account? <button type="button" onClick={() => setMode("login")} className="font-extrabold text-[#D88A00] cursor-pointer transition hover:text-[#2B1D12]">Login</button>
         </motion.p>
       </motion.div>
@@ -471,9 +482,9 @@ function ForgotPasswordForm({ setMode }) {
   };
 
   return (
-    <motion.div key="forgot" custom={1} variants={contentVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }} className="mt-8">
-      <div className="mb-6">
-        <h3 className="text-2xl font-black text-[#0F1117] mb-2">
+    <motion.div key="forgot" custom={1} variants={contentVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }} className="mt-4">
+      <div className="mb-4">
+        <h3 className="text-xl font-black text-[#0F1117] mb-1">
           {step === 1 && "Account Recovery"}
           {step === 2 && "Enter OTP"}
           {step === 3 && "Create New Password"}
@@ -486,17 +497,17 @@ function ForgotPasswordForm({ setMode }) {
       </div>
 
       {step === 1 && (
-        <form onSubmit={reqOtp} className="grid gap-2">
-          <InputField icon={UserRound} placeholder="Email Address or Phone Number" value={identifier} onChange={(e) => { setIdentifier(e.target.value); setError(""); }} error={error} />
-          <GradientButton disabled={isSubmitting}>{isSubmitting ? "Sending..." : "Send OTP"}</GradientButton>
+        <form onSubmit={reqOtp} className="grid gap-1">
+          <InputField icon={UserRound} placeholder="Email Address or Phone Number" value={identifier} onChange={(e) => { setIdentifier(e.target.value); setError(""); }} error={error} compact />
+          <GradientButton disabled={isSubmitting} compact>{isSubmitting ? "Sending..." : "Send OTP"}</GradientButton>
         </form>
       )}
 
       {step === 2 && (
-        <form onSubmit={verifyOtp} className="grid gap-2">
-          <InputField icon={KeyRound} placeholder="6-digit verification code" value={code} onChange={(e) => { setCode(e.target.value); setError(""); }} error={error} />
-          <GradientButton disabled={isSubmitting}>{isSubmitting ? "Verifying..." : "Verify OTP"}</GradientButton>
-          <div className="flex justify-between items-center mt-4">
+        <form onSubmit={verifyOtp} className="grid gap-1">
+          <InputField icon={KeyRound} placeholder="6-digit verification code" value={code} onChange={(e) => { setCode(e.target.value); setError(""); }} error={error} compact />
+          <GradientButton disabled={isSubmitting} compact>{isSubmitting ? "Verifying..." : "Verify OTP"}</GradientButton>
+          <div className="flex justify-between items-center mt-3">
             <button type="button" onClick={() => { setStep(1); setCode(""); }} className="text-sm font-bold text-[#7A7482] hover:text-[#2B1D12] cursor-pointer flex items-center gap-1"><ArrowLeft className="w-4 h-4" /> Change Email</button>
             <button type="button" onClick={reqOtp} disabled={timeLeft > 0 || isSubmitting} className={`text-sm font-bold flex items-center gap-1 ${timeLeft > 0 || isSubmitting ? 'text-[#A09CA6] cursor-not-allowed' : 'text-[#D88A00] hover:text-[#2B1D12] cursor-pointer'}`}>
               <Timer className="w-4 h-4" />{timeLeft > 0 ? `Resend in ${timeLeft}s` : "Resend OTP"}
@@ -506,12 +517,12 @@ function ForgotPasswordForm({ setMode }) {
       )}
 
       {step === 3 && (
-        <form onSubmit={resetPass} className="grid gap-2">
-          <InputField icon={LockKeyhole} type="password" placeholder="New Password" isPassword showValue={showPassword} onToggle={() => setShowPassword((v) => !v)} value={newPassword} onChange={(e) => { setNewPassword(e.target.value); setError(""); }} />
-          <InputField icon={LockKeyhole} type="password" placeholder="Confirm Password" isPassword showValue={showConfirm} onToggle={() => setShowConfirm((v) => !v)} value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); setError(""); }} error={error} />
+        <form onSubmit={resetPass} className="grid gap-1">
+          <InputField icon={LockKeyhole} type="password" placeholder="New Password" isPassword showValue={showPassword} onToggle={() => setShowPassword((v) => !v)} value={newPassword} onChange={(e) => { setNewPassword(e.target.value); setError(""); }} compact />
+          <InputField icon={LockKeyhole} type="password" placeholder="Confirm Password" isPassword showValue={showConfirm} onToggle={() => setShowConfirm((v) => !v)} value={confirmPassword} onChange={(e) => { setConfirmPassword(e.target.value); setError(""); }} error={error} compact />
           
-          <div className="bg-[#FFF8E8] p-4 rounded-xl border border-[#F4B000]/20 mb-4 mt-2">
-            <p className="text-xs font-bold text-[#4B3A2A] mb-2">Password must contain:</p>
+          <div className="bg-[#FFF8E8] p-3 rounded-xl border border-[#F4B000]/20 mb-3 mt-1.5">
+            <p className="text-xs font-bold text-[#4B3A2A] mb-1.5">Password must contain:</p>
             <ul className="space-y-1 text-xs font-medium">
               <li className={`flex items-center gap-2 ${newPassword.length >= 8 ? 'text-green-600' : 'text-[#7A7482]'}`}>{newPassword.length >= 8 ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />} Minimum 8 characters</li>
               <li className={`flex items-center gap-2 ${/(?=.*[A-Z])/.test(newPassword) ? 'text-green-600' : 'text-[#7A7482]'}`}>{/(?=.*[A-Z])/.test(newPassword) ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />} 1 uppercase letter</li>
@@ -520,11 +531,11 @@ function ForgotPasswordForm({ setMode }) {
               <li className={`flex items-center gap-2 ${/(?=.*[!@#$%^&*])/.test(newPassword) ? 'text-green-600' : 'text-[#7A7482]'}`}>{/(?=.*[!@#$%^&*])/.test(newPassword) ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />} 1 special character</li>
             </ul>
           </div>
-          <GradientButton disabled={isSubmitting}>{isSubmitting ? "Resetting..." : "Reset Password"}</GradientButton>
+          <GradientButton disabled={isSubmitting} compact>{isSubmitting ? "Resetting..." : "Reset Password"}</GradientButton>
         </form>
       )}
 
-      <div className="mt-8 text-center">
+      <div className="mt-6 text-center">
         <p className="text-sm font-medium text-[#6F7685]">Remember your password? <button type="button" onClick={() => setMode("login")} className="font-extrabold text-[#D88A00] cursor-pointer transition hover:text-[#2B1D12]">Login</button></p>
       </div>
     </motion.div>
@@ -536,21 +547,16 @@ function FormPanel({ mode, setMode }) {
   const direction = mode === 'forgot' ? -1 : isSignup ? 1 : -1;
 
   return (
-    <motion.section layout transition={panelTransition} className={`relative order-1 flex min-h-[720px] w-full min-w-0 items-center justify-center bg-white px-6 py-10 sm:px-10 lg:min-h-0 lg:basis-[55%] lg:px-16 ${isSignup ? "lg:order-1" : "lg:order-2"}`}>
-      <div className="absolute right-6 top-6 hidden sm:block">
-        <button type="button" className="inline-flex h-11 items-center gap-2 rounded-full border border-[#E6E1D8] bg-white/90 px-4 text-sm font-bold text-[#2B1D12] shadow-[0_14px_36px_rgba(43,29,18,0.05)] backdrop-blur-xl cursor-pointer">
-          <Globe2 className="h-4 w-4" />English
-        </button>
-      </div>
+    <motion.section layout transition={panelTransition} className={`relative order-1 flex w-full min-w-0 items-center justify-center bg-white px-6 lg:basis-[56%] lg:px-10 py-6 lg:py-8 ${isSignup ? "lg:order-1" : "lg:order-2"}`}>
 
       <div className="w-full min-w-0 max-w-[520px]">
         <AnimatePresence mode="wait" custom={direction}>
-          <motion.div key={`${mode}-heading`} custom={direction} variants={contentVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className={`text-center ${isSignup ? 'mt-6' : ''}`}>
-            <h2 className={`font-black leading-tight tracking-normal text-[#0F1117] ${isSignup ? 'text-3xl' : 'text-4xl'}`}>
+          <motion.div key={`${mode}-heading`} custom={direction} variants={contentVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }} className="text-center mt-2">
+            <h2 className="font-black leading-tight tracking-normal text-[#0F1117] text-2xl sm:text-3xl">
               {mode === 'forgot' ? "Account Recovery" : isSignup ? "Create Account" : "Login"}
             </h2>
             {!isSignup && (
-              <p className="mt-3 text-base font-medium leading-7 text-[#697184]">
+              <p className="mt-2 text-sm font-medium leading-relaxed text-[#697184]">
                 {mode === 'forgot' ? "Forgot your password?" : "Access your SPOOWA account."}
               </p>
             )}
@@ -576,13 +582,24 @@ function FormPanel({ mode, setMode }) {
 function Auth() {
   const [mode, setMode] = useState("login");
   return (
-    <div className="min-h-screen bg-[#FFFDF7] font-body text-[#2B1D12]">
+    <div className="relative min-h-screen overflow-x-hidden bg-[#FFFDF7] font-body text-[#2B1D12]">
+      {/* Background orbs — clipped by parent overflow-x-hidden, never affect vertical layout */}
+      <div className="pointer-events-none absolute -left-40 top-40 h-96 w-96 rounded-full bg-[#FFC83D]/20 blur-[100px]" />
+      <div className="pointer-events-none absolute -right-40 bottom-40 h-[28rem] w-[28rem] rounded-full bg-[#F4B000]/15 blur-[120px]" />
+
       <Navbar />
-      <main className="relative isolate flex min-h-[calc(100vh-73px)] items-center justify-center overflow-hidden px-4 py-8 sm:px-6 lg:px-8">
-        <div className="pointer-events-none absolute -left-32 top-12 h-80 w-80 rounded-full bg-[#FFC83D]/20 blur-3xl" />
-        <div className="pointer-events-none absolute -right-36 bottom-8 h-96 w-96 rounded-full bg-[#F4B000]/15 blur-3xl" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[linear-gradient(180deg,rgba(255,248,232,0.9),rgba(255,253,247,0))]" />
-        <motion.div layout transition={panelTransition} className="relative z-10 flex w-full min-w-0 max-w-[1200px] flex-col overflow-hidden rounded-[32px] border border-white/80 bg-white shadow-[0_35px_90px_rgba(43,29,18,0.12),0_12px_40px_rgba(244,176,0,0.10)] lg:h-[750px] lg:flex-row">
+
+      <main className="relative z-10 flex min-h-[calc(100vh-64px)] items-start justify-center px-4 py-6 sm:px-6 lg:items-center lg:px-8">
+        {/* Subtle top/bottom gradient overlays */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[linear-gradient(180deg,rgba(255,248,232,0.6),rgba(255,253,247,0))]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(0deg,rgba(255,248,232,0.4),rgba(255,253,247,0))]" />
+
+        {/* Auth card */}
+        <motion.div
+          layout
+          transition={panelTransition}
+          className="relative z-10 flex w-full min-w-0 max-w-[960px] flex-col overflow-hidden rounded-[28px] border border-white/90 bg-white shadow-[0_24px_64px_rgba(43,29,18,0.12),0_8px_32px_rgba(244,176,0,0.09)] lg:flex-row"
+        >
           <MarketingPanel mode={mode} />
           <FormPanel mode={mode} setMode={setMode} />
         </motion.div>
@@ -592,3 +609,4 @@ function Auth() {
 }
 
 export default Auth;
+

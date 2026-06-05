@@ -46,11 +46,10 @@ export function HydrationCalculator() {
               <button
                 key={actKey}
                 onClick={() => setActivity(actKey)}
-                className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all border ${
-                  activity === actKey
+                className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all border ${activity === actKey
                     ? "bg-[#D4AF37] text-white border-[#D4AF37] shadow-md scale-102"
                     : "bg-white text-gray-600 border-gray-200 hover:border-[#D4AF37]/50"
-                }`}
+                  }`}
               >
                 {activities[actKey].label}
               </button>
@@ -90,7 +89,7 @@ export function HydrationCalculator() {
               <p className="text-display text-3xl text-[#D4AF37] mt-1 font-black">{calculateDrinkIntake()}</p>
               <span className="text-[9px] font-bold text-gray-500 uppercase">Cans</span>
             </div>
-            
+
             <div className="bg-white border-2 border-[#D4AF37]/20 hover:border-[#D4AF37] rounded-3xl p-5 text-center transition-all shadow-sm">
               <span className="text-[10px] font-extrabold tracking-wider text-gray-400 uppercase">Electrolytes</span>
               <p className="text-display text-3xl text-[#D4AF37] mt-1 font-black">{calculateElectrolytes()} mg</p>

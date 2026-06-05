@@ -1,23 +1,39 @@
-import { Search, User, ShoppingBag, Menu, LogOut, Package } from "lucide-react";
+import { Search, User, ShoppingBag, Menu, LogOut, Package, X, ChevronRight } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import logo from "@/assets/logo.png";
 
+const TICKER_ITEMS = [
+  "🇮🇳 MADE IN INDIA",
+  "● NO ARTIFICIAL FLAVORS",
+  "⚡ ELECTROLYTES + VITAMINS",
+  "💧 FAST HYDRATION",
+  "📦 FREE SHIPPING ON ORDERS ABOVE ₹499",
+  "🌿 100% NATURAL INGREDIENTS",
+  "🏆 TRUSTED BY 50K+ CUSTOMERS",
+];
+
 export function AnnouncementBar() {
-  const items = [
-    "🇮🇳 MADE IN INDIA",
-    "● NO ARTIFICIAL FLAVORS",
-    "⚡ ELECTROLYTES + VITAMINS",
-    "💧 FAST HYDRATION",
-    "📦 FREE SHIPPING ON ORDERS ABOVE ₹499",
-  ];
+  const repeated = [...TICKER_ITEMS, ...TICKER_ITEMS];
   return (
-    <div className="border-b border-border/60 bg-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 overflow-x-auto px-4 py-2.5 text-[11px] font-semibold tracking-wider text-foreground/80 sm:px-6 lg:px-8">
-        {items.map((it) => (
-          <span key={it} className="whitespace-nowrap">{it}</span>
+    <div className="relative overflow-hidden bg-[#2B1D12] py-2.5">
+      {/* Left fade mask */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-16 z-10 bg-gradient-to-r from-[#2B1D12] to-transparent" />
+      {/* Right fade mask */}
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-16 z-10 bg-gradient-to-l from-[#2B1D12] to-transparent" />
+
+      <div className="flex animate-marquee whitespace-nowrap">
+        {repeated.map((item, i) => (
+          <span
+            key={i}
+            className="mx-6 text-[11px] font-bold tracking-[0.18em] text-white/90 uppercase shrink-0"
+          >
+            {item}
+            <span className="ml-6 text-[#F4B000]/60">·</span>
+          </span>
         ))}
       </div>
     </div>
@@ -27,11 +43,33 @@ export function AnnouncementBar() {
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [prevCartCount, setPrevCartCount] = useState(0);
+  const [cartBump, setCartBump] = useState(false);
   const dropdownRef = useRef(null);
+  const location = useLocation();
   const { user, logout } = useAuth();
   const { summary } = useCart();
   const cartCount = summary?.totalItems || 0;
 
+  // Scroll shadow effect
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
+
+  // Cart count bump animation
+  useEffect(() => {
+    if (cartCount > prevCartCount) {
+      setCartBump(true);
+      const t = setTimeout(() => setCartBump(false), 500);
+      return () => clearTimeout(t);
+    }
+    setPrevCartCount(cartCount);
+  }, [cartCount]);
+
+  // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -42,89 +80,280 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setOpen(false);
+  }, [location.pathname]);
+
   const links = [
     { label: "Home", to: "/" },
     { label: "Shop", to: "/shop" },
     { label: "About Us", to: "/about" },
-    { label: "Ingredients", to: "/about" },
+    { label: "Ingredients", to: "/#ingredients" },
     { label: "Team", to: "/team" },
-    { label: "Contact", to: "/about" },
+    { label: "Contact", to: "/#footer" },
   ];
 
+  const isActive = (to) => {
+    if (to === "/") return location.pathname === "/";
+    return location.pathname.startsWith(to);
+  };
+
   return (
-    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-border/60">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <Link to="/" className="logo inline-flex items-center">
-          <img src={logo} alt="SPOOWA Logo" className="h-8 w-auto object-contain" />
+    <header
+      className={`sticky top-0 z-40 bg-white/95 backdrop-blur-md transition-all duration-300 ${
+        scrolled
+          ? "shadow-[0_1px_24px_rgba(43,29,18,0.10)] border-b border-[#F4B000]/10"
+          : "border-b border-border/40"
+      }`}
+    >
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
+        {/* Logo */}
+        <Link to="/" className="inline-flex items-center shrink-0">
+          <img src={logo} alt="SPOOWA Logo" className="h-9 w-auto object-contain" />
         </Link>
 
-        <nav className="hidden items-center gap-9 lg:flex">
+        {/* Desktop Nav */}
+        <nav className="hidden items-center gap-8 lg:flex">
           {links.map((l) => (
-            <Link key={l.label} to={l.to} className="text-sm font-bold tracking-wide text-foreground/80 transition-colors hover:text-accent">
+            <Link
+              key={l.label}
+              to={l.to}
+              onClick={(e) => {
+                if (l.label === "Contact") {
+                  const footer = document.getElementById("footer");
+                  if (footer) {
+                    e.preventDefault();
+                    footer.scrollIntoView({ behavior: "smooth" });
+                  }
+                } else if (l.label === "Ingredients") {
+                  const ingredients = document.getElementById("ingredients");
+                  if (ingredients) {
+                    e.preventDefault();
+                    ingredients.scrollIntoView({ behavior: "smooth" });
+                  }
+                }
+              }}
+              className={`relative text-[13px] font-bold tracking-wide transition-colors duration-200 py-1 ${
+                isActive(l.to)
+                  ? "text-[#D88A00]"
+                  : "text-foreground/70 hover:text-foreground"
+              }`}
+            >
               {l.label}
+              {isActive(l.to) && (
+                <motion.span
+                  layoutId="nav-underline"
+                  className="absolute inset-x-0 -bottom-0.5 h-0.5 rounded-full bg-gradient-to-r from-[#F4B000] to-[#E59700]"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-4">
-          <button aria-label="Search" className="hidden sm:inline-flex rounded-full p-2 hover:bg-muted">
-            <Search className="h-5 w-5" />
-          </button>
-          
+        {/* Action icons */}
+        <div className="flex items-center gap-1.5">
+          {/* User / Account */}
           <div className="relative hidden sm:inline-block" ref={dropdownRef}>
             {user ? (
-              <button 
+              <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center gap-2 rounded-full p-2 hover:bg-muted font-bold text-sm text-[#2B1D12]"
+                className="flex items-center gap-2 rounded-full p-1.5 hover:bg-muted transition-colors"
               >
-                <div className="h-7 w-7 rounded-full bg-[#F4B000] text-white grid place-items-center uppercase text-xs shadow-sm">
-                  {user.name.charAt(0)}
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#F4B000] to-[#E59700] text-white grid place-items-center uppercase text-xs font-bold shadow-[0_4px_12px_rgba(244,176,0,0.30)]">
+                  {user.name?.charAt(0)}
                 </div>
               </button>
             ) : (
-              <Link to="/auth" aria-label="Account" className="inline-flex rounded-full p-2 hover:bg-muted">
-                <User className="h-5 w-5" />
+              <Link
+                to="/auth"
+                aria-label="Account"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors"
+              >
+                <User className="h-5 w-5 text-foreground/70" />
               </Link>
             )}
-            
-            {userDropdownOpen && user && (
-              <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-gray-100 bg-white shadow-lg overflow-hidden py-1 z-50 animate-fade-up animate-duration-200">
-                <div className="px-4 py-3 border-b border-gray-50">
-                  <p className="text-sm font-bold text-[#2B1D12] truncate">{user.name}</p>
-                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                </div>
-                <button className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-[#FFF8E8] hover:text-[#D88A00] transition-colors">
-                  <Package className="h-4 w-4" /> My Orders
-                </button>
-                <button onClick={() => { logout(); setUserDropdownOpen(false); }} className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
-                  <LogOut className="h-4 w-4" /> Logout
-                </button>
-              </div>
-            )}
+
+            <AnimatePresence>
+              {userDropdownOpen && user && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute right-0 mt-2 w-52 rounded-2xl border border-gray-100 bg-white shadow-[0_20px_60px_rgba(0,0,0,0.12)] overflow-hidden z-50"
+                >
+                  <div className="px-4 py-3.5 bg-gradient-to-br from-[#FFF8E8] to-white border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#F4B000] to-[#E59700] text-white grid place-items-center uppercase text-sm font-bold shrink-0 shadow-sm">
+                        {user.name?.charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-[#2B1D12] truncate">{user.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="py-1.5">
+                    <button className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-[#FFF8E8] hover:text-[#D88A00] transition-colors">
+                      <Package className="h-4 w-4 shrink-0" /> My Orders
+                    </button>
+                    <button
+                      onClick={() => { logout(); setUserDropdownOpen(false); }}
+                      className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4 shrink-0" /> Sign Out
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          <Link to="/cart" aria-label="Cart" className="relative rounded-full p-2 hover:bg-muted">
-            <ShoppingBag className="h-5 w-5" />
-            {cartCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 grid h-5 w-5 place-items-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground shadow-sm">
-                {cartCount}
-              </span>
-            )}
+          {/* Cart */}
+          <Link
+            to="/cart"
+            aria-label="Cart"
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors"
+          >
+            <ShoppingBag className="h-5 w-5 text-foreground/70" />
+            <AnimatePresence>
+              {cartCount > 0 && (
+                <motion.span
+                  key={cartCount}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: cartBump ? [1, 1.4, 0.9, 1] : 1 }}
+                  transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+                  className="absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] px-1 place-items-center rounded-full bg-gradient-to-br from-[#F4B000] to-[#E59700] text-[9px] font-bold text-white shadow-sm"
+                >
+                  {cartCount > 99 ? "99+" : cartCount}
+                </motion.span>
+              )}
+            </AnimatePresence>
           </Link>
-          <button aria-label="Menu" onClick={() => setOpen(!open)} className="lg:hidden rounded-full p-2 hover:bg-muted">
-            <Menu className="h-5 w-5" />
+
+          {/* Mobile menu toggle */}
+          <button
+            aria-label="Open menu"
+            onClick={() => setOpen(!open)}
+            className="lg:hidden inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors"
+          >
+            <Menu className="h-5 w-5 text-foreground/70" />
           </button>
         </div>
       </div>
-      {open && (
-        <div className="border-t border-border bg-white lg:hidden">
-          <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
-            {links.map((l) => (
-              <Link key={l.label} to={l.to} onClick={() => setOpen(false)} className="rounded-md px-2 py-2.5 text-sm font-bold hover:bg-muted">{l.label}</Link>
-            ))}
-          </div>
-        </div>
-      )}
+
+      {/* Mobile Drawer */}
+      <AnimatePresence>
+        {open && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setOpen(false)}
+              className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm lg:hidden"
+            />
+            {/* Drawer */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              className="fixed right-0 top-0 z-50 h-full w-[78vw] max-w-[320px] bg-white shadow-[−20px_0_60px_rgba(0,0,0,0.12)] lg:hidden flex flex-col"
+            >
+              {/* Drawer header */}
+              <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+                <img src={logo} alt="SPOOWA" className="h-8 w-auto object-contain" />
+                <button
+                  onClick={() => setOpen(false)}
+                  className="h-9 w-9 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Nav links */}
+              <nav className="flex-1 overflow-y-auto px-4 py-4">
+                {links.map((l, i) => (
+                  <motion.div
+                    key={l.label}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.04, duration: 0.3 }}
+                  >
+                    <Link
+                      to={l.to}
+                      onClick={(e) => {
+                        setOpen(false);
+                        if (l.label === "Contact") {
+                          const footer = document.getElementById("footer");
+                          if (footer) {
+                            e.preventDefault();
+                            setTimeout(() => {
+                              footer.scrollIntoView({ behavior: "smooth" });
+                            }, 300);
+                          }
+                        } else if (l.label === "Ingredients") {
+                          const ingredients = document.getElementById("ingredients");
+                          if (ingredients) {
+                            e.preventDefault();
+                            setTimeout(() => {
+                              ingredients.scrollIntoView({ behavior: "smooth" });
+                            }, 300);
+                          }
+                        }
+                      }}
+                      className={`flex items-center justify-between rounded-xl px-4 py-3 text-[15px] font-bold transition-all ${
+                        isActive(l.to)
+                          ? "bg-[#FFF8E8] text-[#D88A00]"
+                          : "text-foreground/80 hover:bg-muted"
+                      }`}
+                    >
+                      {l.label}
+                      <ChevronRight className="h-4 w-4 opacity-40" />
+                    </Link>
+                  </motion.div>
+                ))}
+              </nav>
+
+              {/* Drawer footer */}
+              <div className="border-t border-gray-100 p-4 space-y-2">
+                {user ? (
+                  <>
+                    <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FFF8E8]">
+                      <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#F4B000] to-[#E59700] text-white grid place-items-center uppercase text-sm font-bold shadow-sm shrink-0">
+                        {user.name?.charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-[#2B1D12] truncate">{user.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { logout(); setOpen(false); }}
+                      className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" /> Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/auth"
+                    onClick={() => setOpen(false)}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#F4B000] to-[#E59700] py-3.5 text-sm font-bold text-white shadow-[0_8px_24px_rgba(244,176,0,0.30)]"
+                  >
+                    <User className="h-4 w-4" /> Sign In / Sign Up
+                  </Link>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
