@@ -32,6 +32,7 @@ import { getSuperAdminDashboard, getCityDistributorDashboard, getGymDistributorD
 import { submitTrainerApplication, submitGymApplication, getApplications, reviewApplication } from '../controllers/applications.js';
 import { validateReferralCode, applyReferralCode, getReferralInfo } from '../controllers/referrals.js';
 import { getMyCommissions, getCommissionBreakdown } from '../controllers/commissions.js';
+import { getCommissionRules, createCommissionRule, updateCommissionRule, deleteCommissionRule } from '../controllers/commissionRules.js';
 import { getAllUsers, getUsersByRole, updateUserRole, getUserProfile } from '../controllers/roles.js';
 
 export const apiRouter = Router();
@@ -205,3 +206,26 @@ apiRouter.put('/roles/users/:id',
 );
 
 apiRouter.get('/roles/profile', authenticate, asyncHandler(getUserProfile));
+
+// ============================================================
+// RBAC: Commission Rules (Super Admin CRUD)
+// ============================================================
+apiRouter.get('/commission-rules',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(getCommissionRules)
+);
+
+apiRouter.post('/commission-rules',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(createCommissionRule)
+);
+
+apiRouter.put('/commission-rules/:id',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(updateCommissionRule)
+);
+
+apiRouter.delete('/commission-rules/:id',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(deleteCommissionRule)
+);

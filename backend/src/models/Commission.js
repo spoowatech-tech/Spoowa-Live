@@ -1,19 +1,15 @@
 import { getPool } from '../config/db.js';
-
-// Commission percentages by role
-const COMMISSION_RATES = {
-  TRAINER_OR_RETAILER: 10,    // 10%
-  GYM_OR_AREA_DISTRIBUTOR: 5, // 5%
-  CITY_DISTRIBUTOR: 3,        // 3%
-};
+import { getRuleByRoleAndCategory } from './CommissionRule.js';
 
 /**
  * Calculate and create commission entries for an order.
+ * Uses dynamic rates from the commission_rules table instead of hardcoded values.
  * @param {number} orderId 
  * @param {number} orderTotal 
  * @param {object} hierarchy - { trainer_id, gym_distributor_id, city_distributor_id }
+ * @param {string} productCategory - Optional product category for category-specific rates
  */
-export async function createCommissionsForOrder(orderId, orderTotal, hierarchy) {
+export async function createCommissionsForOrder(orderId, orderTotal, hierarchy, productCategory = '*') {
   const pool = getPool();
   const commissions = [];
 
@@ -23,13 +19,16 @@ export async function createCommissionsForOrder(orderId, orderTotal, hierarchy) 
       'SELECT user_id FROM trainers WHERE id = ?', [hierarchy.trainer_id]
     );
     if (trainerRows.length > 0) {
-      const rate = COMMISSION_RATES.TRAINER_OR_RETAILER;
-      const amount = (orderTotal * rate) / 100;
-      await pool.execute(
-        `INSERT INTO commissions (order_id, user_id, role, amount, percentage) VALUES (?, ?, ?, ?, ?)`,
-        [orderId, trainerRows[0].user_id, 'TRAINER_OR_RETAILER', amount, rate]
-      );
-      commissions.push({ role: 'TRAINER_OR_RETAILER', amount, rate });
+      const rule = await getRuleByRoleAndCategory('TRAINER_OR_RETAILER', productCategory);
+      if (rule) {
+        const rate = Number(rule.commission_percent);
+        const amount = (orderTotal * rate) / 100;
+        await pool.execute(
+          `INSERT INTO commissions (order_id, user_id, role, amount, percentage) VALUES (?, ?, ?, ?, ?)`,
+          [orderId, trainerRows[0].user_id, 'TRAINER_OR_RETAILER', amount, rate]
+        );
+        commissions.push({ role: 'TRAINER_OR_RETAILER', amount, rate });
+      }
     }
   }
 
@@ -39,13 +38,16 @@ export async function createCommissionsForOrder(orderId, orderTotal, hierarchy) 
       'SELECT user_id FROM gym_distributors WHERE id = ?', [hierarchy.gym_distributor_id]
     );
     if (gymRows.length > 0) {
-      const rate = COMMISSION_RATES.GYM_OR_AREA_DISTRIBUTOR;
-      const amount = (orderTotal * rate) / 100;
-      await pool.execute(
-        `INSERT INTO commissions (order_id, user_id, role, amount, percentage) VALUES (?, ?, ?, ?, ?)`,
-        [orderId, gymRows[0].user_id, 'GYM_OR_AREA_DISTRIBUTOR', amount, rate]
-      );
-      commissions.push({ role: 'GYM_OR_AREA_DISTRIBUTOR', amount, rate });
+      const rule = await getRuleByRoleAndCategory('GYM_OR_AREA_DISTRIBUTOR', productCategory);
+      if (rule) {
+        const rate = Number(rule.commission_percent);
+        const amount = (orderTotal * rate) / 100;
+        await pool.execute(
+          `INSERT INTO commissions (order_id, user_id, role, amount, percentage) VALUES (?, ?, ?, ?, ?)`,
+          [orderId, gymRows[0].user_id, 'GYM_OR_AREA_DISTRIBUTOR', amount, rate]
+        );
+        commissions.push({ role: 'GYM_OR_AREA_DISTRIBUTOR', amount, rate });
+      }
     }
   }
 
@@ -55,13 +57,16 @@ export async function createCommissionsForOrder(orderId, orderTotal, hierarchy) 
       'SELECT user_id FROM city_distributors WHERE id = ?', [hierarchy.city_distributor_id]
     );
     if (cdRows.length > 0) {
-      const rate = COMMISSION_RATES.CITY_DISTRIBUTOR;
-      const amount = (orderTotal * rate) / 100;
-      await pool.execute(
-        `INSERT INTO commissions (order_id, user_id, role, amount, percentage) VALUES (?, ?, ?, ?, ?)`,
-        [orderId, cdRows[0].user_id, 'CITY_DISTRIBUTOR', amount, rate]
-      );
-      commissions.push({ role: 'CITY_DISTRIBUTOR', amount, rate });
+      const rule = await getRuleByRoleAndCategory('CITY_DISTRIBUTOR', productCategory);
+      if (rule) {
+        const rate = Number(rule.commission_percent);
+        const amount = (orderTotal * rate) / 100;
+        await pool.execute(
+          `INSERT INTO commissions (order_id, user_id, role, amount, percentage) VALUES (?, ?, ?, ?, ?)`,
+          [orderId, cdRows[0].user_id, 'CITY_DISTRIBUTOR', amount, rate]
+        );
+        commissions.push({ role: 'CITY_DISTRIBUTOR', amount, rate });
+      }
     }
   }
 

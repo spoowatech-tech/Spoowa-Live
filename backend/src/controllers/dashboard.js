@@ -41,6 +41,12 @@ export async function getSuperAdminDashboard(req, res) {
   );
   const repeatRate = totalCustomers > 0 ? ((repeatStats[0].repeat_customers / totalCustomers) * 100).toFixed(1) : 0;
 
+  // Customer Retention Rate (ordered in last 30 days vs total)
+  const [retentionStats] = await pool.execute(
+    `SELECT COUNT(DISTINCT user_id) as active_last_30 FROM orders WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)`
+  );
+  const retentionRate = totalCustomers > 0 ? ((retentionStats[0].active_last_30 / totalCustomers) * 100).toFixed(1) : 0;
+
   // Top selling products
   const [topProducts] = await pool.execute(
     `SELECT p.id, p.name, p.image, SUM(oi.quantity) as total_sold, SUM(oi.price * oi.quantity) as total_revenue
@@ -95,6 +101,65 @@ export async function getSuperAdminDashboard(req, res) {
      GROUP BY cd.id ORDER BY revenue DESC LIMIT 10`
   );
 
+  // --- NEW ANALYTICS ---
+
+  // Top Customers (by total spent)
+  const [topCustomers] = await pool.execute(
+    `SELECT u.id, u.name, u.email, COUNT(o.id) as order_count, COALESCE(SUM(o.total), 0) as total_spent,
+            MAX(o.created_at) as last_order_date
+     FROM orders o
+     JOIN users u ON o.user_id = u.id
+     GROUP BY u.id ORDER BY total_spent DESC LIMIT 10`
+  );
+
+  // Inactive Customers (no order in 90+ days)
+  const [inactiveCustomers] = await pool.execute(
+    `SELECT u.id, u.name, u.email, MAX(o.created_at) as last_order_date,
+            DATEDIFF(NOW(), MAX(o.created_at)) as days_since_last_order
+     FROM users u
+     LEFT JOIN orders o ON u.id = o.user_id
+     WHERE u.role = 'CUSTOMER'
+     GROUP BY u.id
+     HAVING last_order_date IS NULL OR DATEDIFF(NOW(), MAX(o.created_at)) >= 90
+     ORDER BY days_since_last_order DESC
+     LIMIT 20`
+  );
+
+  // Revenue by Category
+  const [revenueByCategory] = await pool.execute(
+    `SELECT p.category, SUM(oi.quantity) as units_sold, SUM(oi.price * oi.quantity) as revenue
+     FROM order_items oi
+     JOIN products p ON oi.product_id = p.id
+     GROUP BY p.category ORDER BY revenue DESC`
+  );
+
+  // Revenue by City (from order addresses)
+  const [revenueByCity] = await pool.execute(
+    `SELECT a.city, COUNT(o.id) as order_count, COALESCE(SUM(o.total), 0) as revenue
+     FROM orders o
+     JOIN addresses a ON o.address_id = a.id
+     WHERE a.city IS NOT NULL AND a.city != ''
+     GROUP BY a.city ORDER BY revenue DESC LIMIT 15`
+  );
+
+  // Monthly Revenue Trends (last 12 months)
+  const [monthlyRevenue] = await pool.execute(
+    `SELECT DATE_FORMAT(created_at, '%Y-%m') as month, 
+            COUNT(*) as orders, 
+            COALESCE(SUM(total), 0) as revenue
+     FROM orders 
+     WHERE created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+     GROUP BY month ORDER BY month ASC`
+  );
+
+  // Subscription Growth (placeholder — return empty until subscriptions are implemented)
+  const subscriptionGrowth = [];
+
+  // Commission Rules summary
+  const [commissionRules] = await pool.execute(
+    `SELECT * FROM commission_rules WHERE active = TRUE ORDER BY role`
+  );
+
   res.json({
     stats: {
       total_revenue: Number(revenueStats[0].total_revenue),
@@ -106,6 +171,7 @@ export async function getSuperAdminDashboard(req, res) {
       total_users: totalUsers,
       avg_order_value: Number(revenueStats[0].avg_order_value),
       repeat_purchase_rate: Number(repeatRate),
+      customer_retention_rate: Number(retentionRate),
       pending_applications: pendingApplications,
     },
     top_products: topProducts,
@@ -115,6 +181,14 @@ export async function getSuperAdminDashboard(req, res) {
     trainer_wise_sales: trainerWiseSales,
     gym_wise_sales: gymWiseSales,
     city_wise_sales: cityWiseSales,
+    // New analytics
+    top_customers: topCustomers,
+    inactive_customers: inactiveCustomers,
+    revenue_by_category: revenueByCategory,
+    revenue_by_city: revenueByCity,
+    monthly_revenue: monthlyRevenue,
+    subscription_growth: subscriptionGrowth,
+    commission_rules: commissionRules,
   });
 }
 

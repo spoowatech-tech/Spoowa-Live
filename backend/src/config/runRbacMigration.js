@@ -227,6 +227,61 @@ async function runMigration() {
     console.log('');
 
     // ============================================================
+    // 9. Network Hierarchy (Referral Chain Tracking)
+    // ============================================================
+    console.log('📋 Step 4: Creating network_hierarchy table...');
+    await conn.execute(`
+      CREATE TABLE IF NOT EXISTS network_hierarchy (
+        id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        city_distributor_id INT UNSIGNED DEFAULT NULL,
+        area_distributor_id INT UNSIGNED DEFAULT NULL,
+        gym_id              INT UNSIGNED DEFAULT NULL,
+        trainer_id          INT UNSIGNED DEFAULT NULL,
+        customer_id         INT UNSIGNED NOT NULL,
+        created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (city_distributor_id) REFERENCES city_distributors(id) ON DELETE SET NULL,
+        FOREIGN KEY (area_distributor_id) REFERENCES gym_distributors(id) ON DELETE SET NULL,
+        FOREIGN KEY (trainer_id)          REFERENCES trainers(id) ON DELETE SET NULL,
+        FOREIGN KEY (customer_id)         REFERENCES customers(id) ON DELETE CASCADE,
+        UNIQUE KEY uq_hierarchy_customer (customer_id),
+        INDEX idx_nh_city (city_distributor_id),
+        INDEX idx_nh_area (area_distributor_id),
+        INDEX idx_nh_trainer (trainer_id)
+      ) ENGINE=InnoDB
+    `);
+    console.log('   ✅ network_hierarchy');
+    console.log('');
+
+    // ============================================================
+    // 10. Commission Rules (Dynamic Commission Percentages)
+    // ============================================================
+    console.log('📋 Step 5: Creating commission_rules table...');
+    await conn.execute(`
+      CREATE TABLE IF NOT EXISTS commission_rules (
+        id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        role                ENUM('CITY_DISTRIBUTOR','GYM_OR_AREA_DISTRIBUTOR','TRAINER_OR_RETAILER') NOT NULL,
+        commission_percent  DECIMAL(5,2) NOT NULL,
+        product_category    VARCHAR(100) NOT NULL DEFAULT '*',
+        active              BOOLEAN DEFAULT TRUE,
+        created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_rule_role_category (role, product_category),
+        INDEX idx_cr_role (role),
+        INDEX idx_cr_active (active)
+      ) ENGINE=InnoDB
+    `);
+    console.log('   ✅ commission_rules');
+
+    // Seed default rules
+    await conn.execute(`
+      INSERT IGNORE INTO commission_rules (role, commission_percent, product_category, active) VALUES
+        ('TRAINER_OR_RETAILER', 10.00, '*', TRUE),
+        ('GYM_OR_AREA_DISTRIBUTOR', 5.00, '*', TRUE),
+        ('CITY_DISTRIBUTOR', 3.00, '*', TRUE)
+    `);
+    console.log('   ✅ Default commission rules seeded');
+    console.log('');
+
+    // ============================================================
     // Verify
     // ============================================================
     const [tables] = await conn.execute(

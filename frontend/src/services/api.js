@@ -418,3 +418,31 @@ export async function updateUserRoleApi(userId, data) {
 export async function getRoleProfile() {
   return request(`${API_BASE}/roles/profile`);
 }
+
+// ============================================================
+// RBAC: Commission Rules APIs (Super Admin)
+// ============================================================
+
+export async function getCommissionRules() {
+  return request(`${API_BASE}/commission-rules`);
+}
+
+export async function createCommissionRuleApi(data) {
+  return request(`${API_BASE}/commission-rules`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateCommissionRuleApi(id, data) {
+  return request(`${API_BASE}/commission-rules/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteCommissionRuleApi(id) {
+  return request(`${API_BASE}/commission-rules/${id}`, {
+    method: "DELETE",
+  });
+}

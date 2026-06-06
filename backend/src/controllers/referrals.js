@@ -1,4 +1,5 @@
-import { validateReferralCode as validateCode, createReferralMapping, findReferralByUserId, findReferralsByReferrer, countReferralsByReferrer } from '../models/Referral.js';
+import { validateReferralCode as validateCode, createReferralMapping, findReferralByUserId, findReferralsByReferrer, countReferralsByReferrer, resolveOrderHierarchy } from '../models/Referral.js';
+import { createOrUpdateHierarchy } from '../models/NetworkHierarchy.js';
 import { getPool } from '../config/db.js';
 
 /**
@@ -28,6 +29,7 @@ export async function validateReferralCode(req, res) {
 /**
  * POST /api/referrals/apply
  * Apply a referral code to link a user to a referrer (authenticated).
+ * Also populates the network_hierarchy table for chain tracking.
  */
 export async function applyReferralCode(req, res) {
   const { code } = req.body;
@@ -69,6 +71,27 @@ export async function applyReferralCode(req, res) {
         await pool.execute('INSERT INTO customers (user_id, trainer_id) VALUES (?, ?)', [userId, trainer[0].id]);
       }
     }
+  }
+
+  // --- Populate network_hierarchy ---
+  try {
+    // Ensure customer record exists
+    const [custRows] = await pool.execute('SELECT id FROM customers WHERE user_id = ?', [userId]);
+    if (custRows.length > 0) {
+      const customerId = custRows[0].id;
+      const hierarchy = await resolveOrderHierarchy(userId);
+      
+      // Resolve gym_id (same as area_distributor_id in our schema)
+      await createOrUpdateHierarchy(customerId, {
+        trainer_id: hierarchy.trainer_id || null,
+        area_distributor_id: hierarchy.gym_distributor_id || null,
+        gym_id: hierarchy.gym_distributor_id || null,
+        city_distributor_id: hierarchy.city_distributor_id || null,
+      });
+    }
+  } catch (err) {
+    console.error('[NetworkHierarchy] Error populating hierarchy:', err.message);
+    // Non-blocking — referral is already applied
   }
 
   res.json({
