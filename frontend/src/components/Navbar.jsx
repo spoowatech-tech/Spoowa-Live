@@ -1,4 +1,4 @@
-import { Search, User, ShoppingBag, Menu, LogOut, Package, X, ChevronRight, Heart } from "lucide-react";
+import { Search, User, ShoppingBag, Menu, LogOut, Package, X, ChevronRight, Heart, Shield, Building2, Dumbbell, UserCheck, Truck } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -93,9 +93,16 @@ export function Navbar() {
     { label: "Shop", to: "/shop" },
     { label: "About Us", to: "/about" },
     { label: "Team", to: "/team" },
-    { label: "Retailer Portal", to: "/retailer/dashboard" },
-    { label: "Distributor Portal", to: "/distributor/dashboard" },
     { label: "Contact", to: "/#footer" },
+  ];
+
+  // Role-based dashboard icons (visible for dev, will be hidden later)
+  const roleIcons = [
+    { label: "Admin", to: "/admin/dashboard", icon: Shield, role: "SUPER_ADMIN", color: "text-red-500" },
+    { label: "City", to: "/city-distributor/dashboard", icon: Building2, role: "CITY_DISTRIBUTOR", color: "text-blue-500" },
+    { label: "Gym", to: "/gym-distributor/dashboard", icon: Dumbbell, role: "GYM_OR_AREA_DISTRIBUTOR", color: "text-purple-500" },
+    { label: "Trainer", to: "/trainer/dashboard", icon: UserCheck, role: "TRAINER_OR_RETAILER", color: "text-green-500" },
+    { label: "Account", to: "/customer/account", icon: User, role: "CUSTOMER", color: "text-amber-500" },
   ];
 
   const isActive = (to) => {
@@ -156,6 +163,21 @@ export function Navbar() {
           ))}
         </nav>
 
+        {/* Role Dashboard Icons (all visible for dev) */}
+        <div className="hidden lg:flex items-center gap-0.5 mr-2">
+          {roleIcons.map((ri) => (
+            <Link
+              key={ri.role}
+              to={ri.to}
+              data-role={ri.role}
+              title={ri.label}
+              className={`inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-muted transition-colors ${ri.color}`}
+            >
+              <ri.icon className="h-4 w-4" />
+            </Link>
+          ))}
+        </div>
+
         {/* Action icons */}
         <div className="flex items-center gap-1.5">
           {/* User / Account */}
@@ -200,23 +222,17 @@ export function Navbar() {
                     </div>
                   </div>
                   <div className="py-1.5">
-                    <Link
-                      to="/retailer/dashboard"
-                      onClick={() => setUserDropdownOpen(false)}
-                      className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-[#FFF8E8] hover:text-[#D88A00] transition-colors"
-                    >
-                      <Package className="h-4 w-4 shrink-0" /> Retailer Portal
-                    </Link>
-                    <Link
-                      to="/distributor/dashboard"
-                      onClick={() => setUserDropdownOpen(false)}
-                      className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-[#FFF8E8] hover:text-[#D88A00] transition-colors"
-                    >
-                      <Truck className="h-4 w-4 shrink-0" /> Distributor Portal
-                    </Link>
-                    <button className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-[#FFF8E8] hover:text-[#D88A00] transition-colors">
-                      <Package className="h-4 w-4 shrink-0" /> My Orders
-                    </button>
+                    {roleIcons.map((ri) => (
+                      <Link
+                        key={ri.role}
+                        to={ri.to}
+                        onClick={() => setUserDropdownOpen(false)}
+                        data-role={ri.role}
+                        className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-[#FFF8E8] hover:text-[#D88A00] transition-colors"
+                      >
+                        <ri.icon className={`h-4 w-4 shrink-0 ${ri.color}`} /> {ri.label}
+                      </Link>
+                    ))}
                     <button
                       onClick={() => { logout(); setUserDropdownOpen(false); }}
                       className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors"
@@ -374,20 +390,17 @@ export function Navbar() {
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-2 mt-1 mb-2">
-                      <Link
-                        to="/retailer/dashboard"
-                        onClick={() => setOpen(false)}
-                        className="flex items-center justify-center gap-1.5 rounded-xl border border-gray-150 py-2.5 text-xs font-black text-gray-700 bg-gray-50 hover:bg-[#FFF8E8] transition-colors"
-                      >
-                        🏪 Retailer
-                      </Link>
-                      <Link
-                        to="/distributor/dashboard"
-                        onClick={() => setOpen(false)}
-                        className="flex items-center justify-center gap-1.5 rounded-xl border border-gray-150 py-2.5 text-xs font-black text-gray-700 bg-gray-50 hover:bg-[#FFF8E8] transition-colors"
-                      >
-                        🚚 Distributor
-                      </Link>
+                      {roleIcons.slice(0, 4).map((ri) => (
+                        <Link
+                          key={ri.role}
+                          to={ri.to}
+                          onClick={() => setOpen(false)}
+                          data-role={ri.role}
+                          className="flex items-center justify-center gap-1.5 rounded-xl border border-gray-150 py-2.5 text-xs font-black text-gray-700 bg-gray-50 hover:bg-[#FFF8E8] transition-colors"
+                        >
+                          <ri.icon className={`h-3.5 w-3.5 ${ri.color}`} /> {ri.label}
+                        </Link>
+                      ))}
                     </div>
                     <button
                       onClick={() => { logout(); setOpen(false); }}

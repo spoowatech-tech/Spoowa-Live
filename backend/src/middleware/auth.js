@@ -4,7 +4,7 @@ import { getServerConfig } from '../config/index.js';
 /**
  * JWT authentication middleware.
  * Extracts and verifies the token from the Authorization header.
- * Attaches the decoded user info to req.user.
+ * Attaches the decoded user info (including role) to req.user.
  */
 export function authenticate(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -18,7 +18,7 @@ export function authenticate(req, res, next) {
   try {
     const config = getServerConfig();
     const decoded = jwt.verify(token, config.jwtSecret);
-    req.user = { id: decoded.userId, email: decoded.email };
+    req.user = { id: decoded.userId, email: decoded.email, role: decoded.role || 'CUSTOMER' };
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
@@ -29,12 +29,34 @@ export function authenticate(req, res, next) {
 }
 
 /**
- * Generate an Access JWT token for a user.
+ * Role-based authorization middleware factory.
+ * Usage: authorize('SUPER_ADMIN', 'CITY_DISTRIBUTOR')
  */
-export function generateToken(userId, email) {
+export function authorize(...allowedRoles) {
+  return (req, res, next) => {
+    if (!req.user || !req.user.role) {
+      return res.status(403).json({ error: 'Access denied. No role assigned.' });
+    }
+    
+    // SUPER_ADMIN has access to everything
+    if (req.user.role === 'SUPER_ADMIN') {
+      return next();
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'Access denied. Insufficient permissions.' });
+    }
+    next();
+  };
+}
+
+/**
+ * Generate an Access JWT token for a user (includes role).
+ */
+export function generateToken(userId, email, role = 'CUSTOMER') {
   const config = getServerConfig();
   return jwt.sign(
-    { userId, email },
+    { userId, email, role },
     config.jwtSecret,
     { expiresIn: config.jwtExpiresIn }
   );

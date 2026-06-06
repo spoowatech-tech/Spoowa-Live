@@ -43,6 +43,12 @@ async function setupDatabase() {
     await connection.query(seed);
     console.log('✅ Seed data inserted successfully\n');
 
+    // --- Run RBAC Migration ---
+    console.log('🔐 Running RBAC migration...');
+    const rbacMigration = readFileSync(join(__dirname, 'migration_rbac.sql'), 'utf-8');
+    await connection.query(rbacMigration);
+    console.log('✅ RBAC tables created successfully\n');
+
     // --- Verify ---
     const [products] = await connection.query('SELECT COUNT(*) as count FROM spoowa_db.products');
     const [coupons] = await connection.query('SELECT COUNT(*) as count FROM spoowa_db.coupons');

@@ -4,6 +4,15 @@ import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
+// Role hierarchy for permission checks
+const ROLE_HIERARCHY = {
+  SUPER_ADMIN: 5,
+  CITY_DISTRIBUTOR: 4,
+  GYM_OR_AREA_DISTRIBUTOR: 3,
+  TRAINER_OR_RETAILER: 2,
+  CUSTOMER: 1,
+};
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -64,8 +73,37 @@ export function AuthProvider({ children }) {
     toast.success('Logged out');
   };
 
+  // Role helpers
+  const hasRole = (role) => user?.role === role;
+  const isAdmin = () => user?.role === 'SUPER_ADMIN';
+  const isCityDistributor = () => user?.role === 'CITY_DISTRIBUTOR';
+  const isGymDistributor = () => user?.role === 'GYM_OR_AREA_DISTRIBUTOR';
+  const isTrainer = () => user?.role === 'TRAINER_OR_RETAILER';
+  const isCustomer = () => user?.role === 'CUSTOMER';
+
+  const canAccess = (requiredRole) => {
+    if (!user?.role) return false;
+    return (ROLE_HIERARCHY[user.role] || 0) >= (ROLE_HIERARCHY[requiredRole] || 0);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, requestSignup, verifySignup, logout }}>
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      login,
+      loginWithGoogle,
+      requestSignup,
+      verifySignup,
+      logout,
+      // Role helpers
+      hasRole,
+      isAdmin,
+      isCityDistributor,
+      isGymDistributor,
+      isTrainer,
+      isCustomer,
+      canAccess,
+    }}>
       {children}
     </AuthContext.Provider>
   );

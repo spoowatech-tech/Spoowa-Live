@@ -1,6 +1,10 @@
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
 import { createOrder, findOrdersByUserId, findOrderById } from '../models/Order.js';
+import { resolveOrderHierarchy } from '../models/Referral.js';
+import { createCommissionsForOrder } from '../models/Commission.js';
+import { incrementCustomerOrderStats } from '../models/Customer.js';
+import { getPool } from '../config/db.js';
 
 let razorpayInstance = null;
 if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
@@ -38,6 +42,29 @@ export async function placeOrder(req, res) {
     giftingAmount,
     giftingMessage
   );
+
+  // --- RBAC: Resolve referral hierarchy and create commissions ---
+  try {
+    const hierarchy = await resolveOrderHierarchy(req.user.id);
+    const pool = getPool();
+
+    // Update order with hierarchy IDs
+    if (hierarchy.trainer_id || hierarchy.gym_distributor_id || hierarchy.city_distributor_id) {
+      await pool.execute(
+        `UPDATE orders SET trainer_id = ?, gym_distributor_id = ?, city_distributor_id = ? WHERE id = ?`,
+        [hierarchy.trainer_id, hierarchy.gym_distributor_id, hierarchy.city_distributor_id, order.orderId]
+      );
+
+      // Create commission entries
+      await createCommissionsForOrder(order.orderId, order.total, hierarchy);
+    }
+
+    // Update customer order stats
+    await incrementCustomerOrderStats(req.user.id, order.total).catch(() => {});
+  } catch (err) {
+    console.error('[RBAC] Error resolving order hierarchy:', err.message);
+    // Non-blocking — order is already placed
+  }
 
   res.status(201).json({
     message: 'Order placed successfully!',

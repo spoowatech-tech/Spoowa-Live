@@ -21,6 +21,9 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+// Serve uploaded files (certificates, profile images, etc.)
+app.use('/uploads', express.static('uploads'));
+
 // API Routes
 app.use('/api', apiRouter);
 
@@ -41,14 +44,20 @@ async function start() {
     console.log(`   Environment: ${config.nodeEnv}`);
     console.log(`   Database: ${config.dbHost}:${config.dbPort}/${config.dbName}`);
     console.log(`\n📋 API Endpoints:`);
-    console.log(`   Health:     GET  /api/health`);
-    console.log(`   Auth:       POST /api/auth/register, /api/auth/login`);
-    console.log(`   Products:   GET  /api/products, /api/products/:id`);
-    console.log(`   Cart:       GET/POST/PUT/DELETE /api/cart`);
-    console.log(`   Orders:     POST/GET /api/orders`);
-    console.log(`   Addresses:  GET/POST/DELETE /api/addresses`);
-    console.log(`   Coupons:    POST /api/coupons/apply`);
-    console.log(`   Newsletter: POST /api/newsletter/subscribe\n`);
+    console.log(`   Health:        GET  /api/health`);
+    console.log(`   Auth:          POST /api/auth/register, /api/auth/login`);
+    console.log(`   Products:      GET  /api/products, /api/products/:id`);
+    console.log(`   Cart:          GET/POST/PUT/DELETE /api/cart`);
+    console.log(`   Orders:        POST/GET /api/orders`);
+    console.log(`   Addresses:     GET/POST/DELETE /api/addresses`);
+    console.log(`   Coupons:       POST /api/coupons/apply`);
+    console.log(`   Newsletter:    POST /api/newsletter/subscribe`);
+    console.log(`\n🔐 RBAC Endpoints:`);
+    console.log(`   Dashboards:    GET  /api/dashboard/{role}`);
+    console.log(`   Applications:  POST /api/applications/{type}`);
+    console.log(`   Referrals:     POST /api/referrals/validate, /apply`);
+    console.log(`   Commissions:   GET  /api/commissions`);
+    console.log(`   Roles:         GET  /api/roles/users, /api/roles/profile\n`);
   });
 }
 

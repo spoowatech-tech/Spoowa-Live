@@ -1,17 +1,38 @@
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { authenticate } from '../middleware/auth.js';
+import { authenticate, authorize } from '../middleware/auth.js';
 import { asyncHandler } from '../middleware/validate.js';
 
-// Controllers
+// Auth Controllers
 import { signupRequest, signupVerify, login, googleAuth, refresh, logout, getProfile, forgotPasswordRequest, forgotPasswordVerify, resetPassword } from '../controllers/auth.js';
+
+// Product Controllers
 import { getProducts, getProductById, getBestsellers } from '../controllers/products.js';
+
+// Cart Controllers
 import { getCart, addToCart, updateCartItem, removeFromCart, clearCart } from '../controllers/cart.js';
+
+// Coupon Controllers
 import { applyCoupon } from '../controllers/coupons.js';
+
+// Order Controllers
 import { placeOrder, getOrders, getOrderById, createRazorpayOrder, verifyRazorpayPayment } from '../controllers/orders.js';
+
+// Address Controllers
 import { getAddresses, addAddress, deleteAddress } from '../controllers/addresses.js';
+
+// Newsletter Controllers
 import { subscribe } from '../controllers/newsletter.js';
+
+// Wishlist Controllers
 import { getWishlist, toggleWishlist } from '../controllers/wishlist.js';
+
+// RBAC Controllers
+import { getSuperAdminDashboard, getCityDistributorDashboard, getGymDistributorDashboard, getTrainerDashboard, getCustomerDashboard } from '../controllers/dashboard.js';
+import { submitTrainerApplication, submitGymApplication, getApplications, reviewApplication } from '../controllers/applications.js';
+import { validateReferralCode, applyReferralCode, getReferralInfo } from '../controllers/referrals.js';
+import { getMyCommissions, getCommissionBreakdown } from '../controllers/commissions.js';
+import { getAllUsers, getUsersByRole, updateUserRole, getUserProfile } from '../controllers/roles.js';
 
 export const apiRouter = Router();
 
@@ -103,3 +124,84 @@ apiRouter.delete('/addresses/:id', authenticate, asyncHandler(deleteAddress));
 // Newsletter Routes (public)
 // ============================================================
 apiRouter.post('/newsletter/subscribe', asyncHandler(subscribe));
+
+// ============================================================
+// RBAC: Dashboard Routes (role-protected)
+// ============================================================
+apiRouter.get('/dashboard/super-admin',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(getSuperAdminDashboard)
+);
+
+apiRouter.get('/dashboard/city-distributor',
+  authenticate, authorize('CITY_DISTRIBUTOR'),
+  asyncHandler(getCityDistributorDashboard)
+);
+
+apiRouter.get('/dashboard/gym-distributor',
+  authenticate, authorize('GYM_OR_AREA_DISTRIBUTOR'),
+  asyncHandler(getGymDistributorDashboard)
+);
+
+apiRouter.get('/dashboard/trainer',
+  authenticate, authorize('TRAINER_OR_RETAILER'),
+  asyncHandler(getTrainerDashboard)
+);
+
+apiRouter.get('/dashboard/customer',
+  authenticate, authorize('CUSTOMER'),
+  asyncHandler(getCustomerDashboard)
+);
+
+// ============================================================
+// RBAC: Application Routes
+// ============================================================
+apiRouter.post('/applications/trainer', asyncHandler(submitTrainerApplication));
+apiRouter.post('/applications/gym', asyncHandler(submitGymApplication));
+
+apiRouter.get('/applications',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(getApplications)
+);
+
+apiRouter.put('/applications/:id/review',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(reviewApplication)
+);
+
+// ============================================================
+// RBAC: Referral Routes
+// ============================================================
+apiRouter.post('/referrals/validate', asyncHandler(validateReferralCode));
+apiRouter.post('/referrals/apply', authenticate, asyncHandler(applyReferralCode));
+apiRouter.get('/referrals/my-info', authenticate, asyncHandler(getReferralInfo));
+
+// ============================================================
+// RBAC: Commission Routes
+// ============================================================
+apiRouter.get('/commissions', authenticate, asyncHandler(getMyCommissions));
+
+apiRouter.get('/commissions/breakdown',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(getCommissionBreakdown)
+);
+
+// ============================================================
+// RBAC: Role / User Management Routes (Super Admin)
+// ============================================================
+apiRouter.get('/roles/users',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(getAllUsers)
+);
+
+apiRouter.get('/roles/users/:role',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(getUsersByRole)
+);
+
+apiRouter.put('/roles/users/:id',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(updateUserRole)
+);
+
+apiRouter.get('/roles/profile', authenticate, asyncHandler(getUserProfile));

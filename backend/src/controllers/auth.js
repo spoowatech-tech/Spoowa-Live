@@ -35,10 +35,11 @@ const COOKIE_OPTIONS = {
 };
 
 /**
- * Helper to set cookies and send response
+ * Helper to set cookies and send response (now includes role)
  */
 const sendAuthResponse = async (res, user, message, statusCode = 200) => {
-  const token = generateToken(user.id, user.email);
+  const role = user.role || 'CUSTOMER';
+  const token = generateToken(user.id, user.email, role);
   const refreshToken = generateRefreshToken(user.id);
 
   // Hash refresh token for DB storage
@@ -53,7 +54,15 @@ const sendAuthResponse = async (res, user, message, statusCode = 200) => {
 
   res.status(statusCode).json({
     message,
-    user: { id: user.id, name: user.name, email: user.email, provider: user.provider },
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      provider: user.provider,
+      role: role,
+      status: user.status || 'active',
+      profile_image: user.profile_image || null,
+    },
     token, // Send access token in JSON body
   });
 };
@@ -136,9 +145,9 @@ export async function signupVerify(req, res) {
   //   return res.status(400).json({ error: 'Invalid verification code.' });
   // }
 
-  // Create user
+  // Create user (defaults to CUSTOMER role)
   const hashedPassword = await bcrypt.hash(password, 12);
-  const user = await createUser(name.trim(), email.toLowerCase().trim(), hashedPassword, phone);
+  const user = await createUser(name.trim(), email.toLowerCase().trim(), hashedPassword, phone, 'CUSTOMER');
 
   // Clean up OTP
   await deleteOtpCode(phone);
@@ -163,6 +172,14 @@ export async function login(req, res) {
 
   if (user.provider !== 'local') {
     return res.status(400).json({ error: `This account is registered via ${user.provider}. Please sign in using Google.` });
+  }
+
+  if (user.status === 'suspended') {
+    return res.status(403).json({ error: 'Your account has been suspended. Please contact support.' });
+  }
+
+  if (user.status === 'inactive') {
+    return res.status(403).json({ error: 'Your account is inactive. Please contact support.' });
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
@@ -193,8 +210,8 @@ export async function googleAuth(req, res) {
     let user = await findUserByEmail(email);
 
     if (!user) {
-      // Create OAuth User
-      user = await createOAuthUser(name, email, googleId);
+      // Create OAuth User (defaults to CUSTOMER)
+      user = await createOAuthUser(name, email, googleId, 'CUSTOMER');
     } else {
       if (user.provider !== 'google') {
         // Technically could link account, but for simplicity returning error
@@ -236,7 +253,8 @@ export async function refresh(req, res) {
     return res.status(401).json({ error: 'User no longer exists.' });
   }
 
-  const newAccessToken = generateToken(user.id, user.email);
+  // Generate new access token WITH role
+  const newAccessToken = generateToken(user.id, user.email, user.role || 'CUSTOMER');
 
   res.json({ token: newAccessToken });
 }
@@ -263,13 +281,43 @@ export async function logout(req, res) {
 
 /**
  * GET /api/auth/profile
+ * Returns user profile with role-specific extended data.
  */
 export async function getProfile(req, res) {
   const user = await findUserById(req.user.id);
   if (!user) {
     return res.status(404).json({ error: 'User not found.' });
   }
-  res.json({ user });
+  
+  // Fetch role-specific profile data
+  const { getPool } = await import('../config/db.js');
+  const pool = getPool();
+  let roleProfile = null;
+
+  switch (user.role) {
+    case 'CITY_DISTRIBUTOR': {
+      const [rows] = await pool.execute('SELECT * FROM city_distributors WHERE user_id = ?', [user.id]);
+      roleProfile = rows[0] || null;
+      break;
+    }
+    case 'GYM_OR_AREA_DISTRIBUTOR': {
+      const [rows] = await pool.execute('SELECT * FROM gym_distributors WHERE user_id = ?', [user.id]);
+      roleProfile = rows[0] || null;
+      break;
+    }
+    case 'TRAINER_OR_RETAILER': {
+      const [rows] = await pool.execute('SELECT * FROM trainers WHERE user_id = ?', [user.id]);
+      roleProfile = rows[0] || null;
+      break;
+    }
+    case 'CUSTOMER': {
+      const [rows] = await pool.execute('SELECT * FROM customers WHERE user_id = ?', [user.id]);
+      roleProfile = rows[0] || null;
+      break;
+    }
+  }
+
+  res.json({ user: { ...user, roleProfile } });
 }
 
 /**

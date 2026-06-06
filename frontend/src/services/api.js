@@ -303,3 +303,118 @@ export async function subscribeNewsletter(email) {
 export async function getHealthCheck() {
   return request(`${API_BASE}/health`);
 }
+
+// ============================================================
+// RBAC: Dashboard APIs
+// ============================================================
+
+export async function getSuperAdminDashboard() {
+  return request(`${API_BASE}/dashboard/super-admin`);
+}
+
+export async function getCityDistributorDashboard() {
+  return request(`${API_BASE}/dashboard/city-distributor`);
+}
+
+export async function getGymDistributorDashboard() {
+  return request(`${API_BASE}/dashboard/gym-distributor`);
+}
+
+export async function getTrainerDashboardData() {
+  return request(`${API_BASE}/dashboard/trainer`);
+}
+
+export async function getCustomerDashboardData() {
+  return request(`${API_BASE}/dashboard/customer`);
+}
+
+// ============================================================
+// RBAC: Application APIs
+// ============================================================
+
+export async function submitTrainerApplication(data) {
+  return request(`${API_BASE}/applications/trainer`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function submitGymApplication(data) {
+  return request(`${API_BASE}/applications/gym`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getApplications(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters.status) params.set("status", filters.status);
+  if (filters.type) params.set("type", filters.type);
+  if (filters.page) params.set("page", filters.page);
+  const query = params.toString();
+  return request(`${API_BASE}/applications${query ? `?${query}` : ""}`);
+}
+
+export async function reviewApplication(id, decision, reviewNotes = "") {
+  return request(`${API_BASE}/applications/${id}/review`, {
+    method: "PUT",
+    body: JSON.stringify({ decision, review_notes: reviewNotes }),
+  });
+}
+
+// ============================================================
+// RBAC: Referral APIs
+// ============================================================
+
+export async function validateReferralCode(code) {
+  return request(`${API_BASE}/referrals/validate`, {
+    method: "POST",
+    body: JSON.stringify({ code }),
+  });
+}
+
+export async function applyReferralCode(code) {
+  return request(`${API_BASE}/referrals/apply`, {
+    method: "POST",
+    body: JSON.stringify({ code }),
+  });
+}
+
+export async function getReferralInfo() {
+  return request(`${API_BASE}/referrals/my-info`);
+}
+
+// ============================================================
+// RBAC: Commission APIs
+// ============================================================
+
+export async function getMyCommissions(page = 1) {
+  return request(`${API_BASE}/commissions?page=${page}`);
+}
+
+export async function getCommissionBreakdown(page = 1) {
+  return request(`${API_BASE}/commissions/breakdown?page=${page}`);
+}
+
+// ============================================================
+// RBAC: Role / User Management APIs
+// ============================================================
+
+export async function getAllUsers(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters.role) params.set("role", filters.role);
+  if (filters.page) params.set("page", filters.page);
+  const query = params.toString();
+  return request(`${API_BASE}/roles/users${query ? `?${query}` : ""}`);
+}
+
+export async function updateUserRoleApi(userId, data) {
+  return request(`${API_BASE}/roles/users/${userId}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getRoleProfile() {
+  return request(`${API_BASE}/roles/profile`);
+}
