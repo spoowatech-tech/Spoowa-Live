@@ -5,7 +5,7 @@ export async function getWishlistByUserId(userId) {
   const [rows] = await pool.execute(
     `SELECT 
       wi.id, wi.product_id, wi.created_at,
-      p.name, p.price, p.original_price, p.badge, p.discount, p.image, p.gradient
+      p.name, p.price, p.original_price, p.badge, p.discount, p.image, p.gradient, p.rating, p.reviews
     FROM wishlist_items wi
     JOIN products p ON wi.product_id = p.id
     WHERE wi.user_id = ?

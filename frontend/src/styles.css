@@ -88,6 +88,14 @@
     -moz-osx-font-smoothing: grayscale;
   }
   h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  
+  /* Global Cursor Fixes for all interactive elements */
+  button, a, [role="button"], select, input[type="submit"], input[type="button"], input[type="radio"], input[type="checkbox"], label {
+    cursor: pointer;
+  }
+  button:disabled, input:disabled, [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
 }
 
 @layer utilities {

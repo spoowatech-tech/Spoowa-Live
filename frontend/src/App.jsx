@@ -9,6 +9,8 @@ import Auth from './pages/Auth';
 import Cart from './pages/Cart';
 import ProductDetail from './pages/ProductDetail';
 import Shop from './pages/Shop';
+import Wishlist from './pages/Wishlist';
+import Checkout from './pages/Checkout';
 import NotFound from './pages/NotFound';
 import RetailerDashboard from './pages/RetailerDashboard';
 import DistributorDashboard from './pages/DistributorDashboard';
@@ -59,6 +61,8 @@ function App() {
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/retailer/dashboard" element={<RetailerDashboard />} />
                 <Route path="/distributor/dashboard" element={<DistributorDashboard />} />
+                <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/checkout" element={<Checkout />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </WishlistProvider>

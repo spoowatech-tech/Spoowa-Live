@@ -8,7 +8,7 @@ import { signupRequest, signupVerify, login, googleAuth, refresh, logout, getPro
 import { getProducts, getProductById, getBestsellers } from '../controllers/products.js';
 import { getCart, addToCart, updateCartItem, removeFromCart, clearCart } from '../controllers/cart.js';
 import { applyCoupon } from '../controllers/coupons.js';
-import { placeOrder, getOrders, getOrderById } from '../controllers/orders.js';
+import { placeOrder, getOrders, getOrderById, createRazorpayOrder, verifyRazorpayPayment } from '../controllers/orders.js';
 import { getAddresses, addAddress, deleteAddress } from '../controllers/addresses.js';
 import { subscribe } from '../controllers/newsletter.js';
 import { getWishlist, toggleWishlist } from '../controllers/wishlist.js';
@@ -87,6 +87,8 @@ apiRouter.post('/coupons/apply', asyncHandler(applyCoupon));
 // Order Routes (protected)
 // ============================================================
 apiRouter.post('/orders', authenticate, asyncHandler(placeOrder));
+apiRouter.post('/orders/razorpay/create', authenticate, asyncHandler(createRazorpayOrder));
+apiRouter.post('/orders/razorpay/verify', authenticate, asyncHandler(verifyRazorpayPayment));
 apiRouter.get('/orders', authenticate, asyncHandler(getOrders));
 apiRouter.get('/orders/:id', authenticate, asyncHandler(getOrderById));
 

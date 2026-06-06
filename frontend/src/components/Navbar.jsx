@@ -1,9 +1,10 @@
-import { Search, User, ShoppingBag, Menu, LogOut, Package, X, ChevronRight } from "lucide-react";
+import { Search, User, ShoppingBag, Menu, LogOut, Package, X, ChevronRight, Heart } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import logo from "@/assets/logo.png";
 
 const TICKER_ITEMS = [
@@ -50,7 +51,9 @@ export function Navbar() {
   const location = useLocation();
   const { user, logout } = useAuth();
   const { summary } = useCart();
+  const { items: wishlistItems } = useWishlist();
   const cartCount = summary?.totalItems || 0;
+  const wishlistCount = wishlistItems?.length || 0;
 
   // Scroll shadow effect
   useEffect(() => {
@@ -225,6 +228,28 @@ export function Navbar() {
               )}
             </AnimatePresence>
           </div>
+
+          {/* Wishlist */}
+          <Link
+            to="/wishlist"
+            aria-label="Wishlist"
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors"
+          >
+            <Heart className="h-5 w-5 text-foreground/70" />
+            <AnimatePresence>
+              {wishlistCount > 0 && (
+                <motion.span
+                  key={wishlistCount}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+                  className="absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] px-1 place-items-center rounded-full bg-gradient-to-br from-[#EF4444] to-[#B91C1C] text-[9px] font-bold text-white shadow-sm"
+                >
+                  {wishlistCount > 99 ? "99+" : wishlistCount}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </Link>
 
           {/* Cart */}
           <Link

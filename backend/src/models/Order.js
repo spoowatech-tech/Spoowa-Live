@@ -4,7 +4,19 @@ import { getPool } from '../config/db.js';
  * Create an order from the user's cart.
  * Uses a transaction to ensure atomicity.
  */
-export async function createOrder(userId, addressId, couponCode, discountAmount) {
+export async function createOrder(
+  userId, 
+  addressId, 
+  couponCode, 
+  discountAmount, 
+  paymentMethod = 'cod', 
+  paymentStatus = 'pending', 
+  paymentId = null, 
+  razorpayOrderId = null,
+  donationAmount = 0,
+  giftingAmount = 0,
+  giftingMessage = null
+) {
   const pool = getPool();
   const connection = await pool.getConnection();
 
@@ -28,13 +40,19 @@ export async function createOrder(userId, addressId, couponCode, discountAmount)
     const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const discount = discountAmount || 0;
     const shipping = subtotal >= 499 ? 0 : 49;
-    const total = subtotal - discount + shipping;
+    const finalSubtotal = subtotal - discount;
+    const total = finalSubtotal + shipping + (donationAmount || 0) + (giftingAmount || 0);
 
     // 3. Create order
     const [orderResult] = await connection.execute(
-      `INSERT INTO orders (user_id, address_id, coupon_code, subtotal, discount_amount, shipping, total, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`,
-      [userId, addressId || null, couponCode || null, subtotal, discount, shipping, total]
+      `INSERT INTO orders (
+        user_id, address_id, coupon_code, subtotal, discount_amount, shipping, total, status,
+        payment_method, payment_status, payment_id, razorpay_order_id, donation_amount, gifting_amount, gifting_message
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        userId, addressId || null, couponCode || null, subtotal, discount, shipping, total,
+        paymentMethod, paymentStatus, paymentId, razorpayOrderId, donationAmount || 0, giftingAmount || 0, giftingMessage || null
+      ]
     );
     const orderId = orderResult.insertId;
 
