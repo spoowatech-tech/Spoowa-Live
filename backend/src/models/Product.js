@@ -149,3 +149,114 @@ export async function findBestsellers(limit = 8) {
 
   return rows;
 }
+
+/**
+ * Create a new product (Super Admin).
+ */
+export async function createProduct(data) {
+  const pool = getPool();
+  const {
+    name, description, short_description, price, original_price,
+    category, type, benefit, image, images, rating, reviews,
+    is_bestseller, is_new, stock, sizes
+  } = data;
+
+  const [result] = await pool.execute(
+    `INSERT INTO products (name, description, short_description, price, original_price, category, type, benefit, image, images, rating, reviews, is_bestseller, is_new, stock, is_active)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)`,
+    [
+      name, description || null, short_description || null,
+      Number(price), Number(original_price || price),
+      category || null, type || null, benefit || null,
+      image || null, images ? JSON.stringify(images) : null,
+      Number(rating || 0), Number(reviews || 0),
+      is_bestseller ? 1 : 0, is_new ? 1 : 0,
+      Number(stock || 0)
+    ]
+  );
+
+  const productId = result.insertId;
+
+  // Insert sizes if provided
+  if (sizes && Array.isArray(sizes) && sizes.length > 0) {
+    for (const size of sizes) {
+      await pool.execute(
+        'INSERT INTO product_sizes (product_id, size_label) VALUES (?, ?)',
+        [productId, size]
+      );
+    }
+  }
+
+  return findProductById(productId);
+}
+
+/**
+ * Update an existing product (Super Admin).
+ */
+export async function updateProduct(id, data) {
+  const pool = getPool();
+  const allowed = ['name', 'description', 'short_description', 'price', 'original_price', 'category', 'type', 'benefit', 'image', 'rating', 'reviews', 'is_bestseller', 'is_new', 'stock', 'is_active'];
+  const sets = [];
+  const params = [];
+
+  for (const key of allowed) {
+    if (data[key] !== undefined) {
+      sets.push(`${key} = ?`);
+      if (key === 'images') {
+        params.push(JSON.stringify(data[key]));
+      } else {
+        params.push(data[key]);
+      }
+    }
+  }
+
+  if (sets.length === 0) return findProductById(id);
+
+  params.push(id);
+  await pool.execute(`UPDATE products SET ${sets.join(', ')} WHERE id = ?`, params);
+
+  // Update sizes if provided
+  if (data.sizes && Array.isArray(data.sizes)) {
+    await pool.execute('DELETE FROM product_sizes WHERE product_id = ?', [id]);
+    for (const size of data.sizes) {
+      await pool.execute(
+        'INSERT INTO product_sizes (product_id, size_label) VALUES (?, ?)',
+        [id, size]
+      );
+    }
+  }
+
+  return findProductById(id);
+}
+
+/**
+ * Soft-delete a product (Super Admin).
+ */
+export async function deleteProduct(id) {
+  const pool = getPool();
+  await pool.execute('UPDATE products SET is_active = FALSE WHERE id = ?', [id]);
+}
+
+/**
+ * Find ALL products (including inactive) for admin view.
+ */
+export async function findAllProductsAdmin(limit = 100, offset = 0) {
+  const pool = getPool();
+  const [rows] = await pool.query(
+    `SELECT p.*, GROUP_CONCAT(ps.size_label) as size_labels
+     FROM products p
+     LEFT JOIN product_sizes ps ON ps.product_id = p.id
+     GROUP BY p.id
+     ORDER BY p.id DESC
+     LIMIT ${Number(limit)} OFFSET ${Number(offset)}`
+  );
+  const [countResult] = await pool.execute('SELECT COUNT(*) as total FROM products');
+
+  for (const row of rows) {
+    row.sizes = row.size_labels ? row.size_labels.split(',') : [];
+    delete row.size_labels;
+  }
+
+  return { products: rows, total: countResult[0].total };
+}
+

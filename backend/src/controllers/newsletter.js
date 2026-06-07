@@ -1,4 +1,4 @@
-import { subscribe as subscribeModel } from '../models/Newsletter.js';
+import { subscribe as subscribeModel, findAllSubscribers } from '../models/Newsletter.js';
 import { isValidEmail } from '../middleware/validate.js';
 
 /**
@@ -20,3 +20,15 @@ export async function subscribe(req, res) {
     res.json({ message: 'You are already subscribed.', email: result.email });
   }
 }
+
+/**
+ * GET /api/newsletter/subscribers
+ * Super Admin: List all newsletter subscribers.
+ */
+export async function getSubscribers(req, res) {
+  const { page = 1, limit = 100 } = req.query;
+  const offset = (Number(page) - 1) * Number(limit);
+  const result = await findAllSubscribers(Number(limit), offset);
+  res.json({ ...result, page: Number(page), limit: Number(limit) });
+}
+

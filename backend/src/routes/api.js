@@ -7,7 +7,7 @@ import { asyncHandler } from '../middleware/validate.js';
 import { signupRequest, signupVerify, login, googleAuth, refresh, logout, getProfile, forgotPasswordRequest, forgotPasswordVerify, resetPassword } from '../controllers/auth.js';
 
 // Product Controllers
-import { getProducts, getProductById, getBestsellers } from '../controllers/products.js';
+import { getProducts, getProductById, getBestsellers, getAllProductsAdmin, createProduct, updateProductAdmin, deleteProductAdmin } from '../controllers/products.js';
 
 // Cart Controllers
 import { getCart, addToCart, updateCartItem, removeFromCart, clearCart } from '../controllers/cart.js';
@@ -16,13 +16,16 @@ import { getCart, addToCart, updateCartItem, removeFromCart, clearCart } from '.
 import { applyCoupon } from '../controllers/coupons.js';
 
 // Order Controllers
-import { placeOrder, getOrders, getOrderById, createRazorpayOrder, verifyRazorpayPayment } from '../controllers/orders.js';
+import { placeOrder, getOrders, getOrderById, createRazorpayOrder, verifyRazorpayPayment, getAdminOrders, updateOrderStatusAdmin } from '../controllers/orders.js';
 
 // Address Controllers
 import { getAddresses, addAddress, deleteAddress } from '../controllers/addresses.js';
 
 // Newsletter Controllers
-import { subscribe } from '../controllers/newsletter.js';
+import { subscribe, getSubscribers } from '../controllers/newsletter.js';
+
+// Contact Message Controllers
+import { submitContact, getContactMessages, markAsRead } from '../controllers/contactMessages.js';
 
 // Wishlist Controllers
 import { getWishlist, toggleWishlist } from '../controllers/wishlist.js';
@@ -82,6 +85,10 @@ apiRouter.post('/auth/forgot-password/reset', asyncHandler(resetPassword));
 // Product Routes (public)
 // ============================================================
 apiRouter.get('/products/bestsellers', asyncHandler(getBestsellers));
+apiRouter.get('/products/admin/all',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(getAllProductsAdmin)
+);
 apiRouter.get('/products/:id', asyncHandler(getProductById));
 apiRouter.get('/products', asyncHandler(getProducts));
 
@@ -111,8 +118,16 @@ apiRouter.post('/coupons/apply', asyncHandler(applyCoupon));
 apiRouter.post('/orders', authenticate, asyncHandler(placeOrder));
 apiRouter.post('/orders/razorpay/create', authenticate, asyncHandler(createRazorpayOrder));
 apiRouter.post('/orders/razorpay/verify', authenticate, asyncHandler(verifyRazorpayPayment));
+apiRouter.get('/orders/admin/all',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(getAdminOrders)
+);
 apiRouter.get('/orders', authenticate, asyncHandler(getOrders));
 apiRouter.get('/orders/:id', authenticate, asyncHandler(getOrderById));
+apiRouter.put('/orders/:id/status',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(updateOrderStatusAdmin)
+);
 
 // ============================================================
 // Address Routes (protected)
@@ -122,9 +137,42 @@ apiRouter.post('/addresses', authenticate, asyncHandler(addAddress));
 apiRouter.delete('/addresses/:id', authenticate, asyncHandler(deleteAddress));
 
 // ============================================================
-// Newsletter Routes (public)
+// Newsletter Routes (public + admin)
 // ============================================================
 apiRouter.post('/newsletter/subscribe', asyncHandler(subscribe));
+apiRouter.get('/newsletter/subscribers',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(getSubscribers)
+);
+
+// ============================================================
+// Contact Message Routes (public + admin)
+// ============================================================
+apiRouter.post('/contact', asyncHandler(submitContact));
+apiRouter.get('/contact',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(getContactMessages)
+);
+apiRouter.put('/contact/:id/read',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(markAsRead)
+);
+
+// ============================================================
+// Product Admin Routes (Super Admin CRUD)
+// ============================================================
+apiRouter.post('/products',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(createProduct)
+);
+apiRouter.put('/products/:id',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(updateProductAdmin)
+);
+apiRouter.delete('/products/:id',
+  authenticate, authorize('SUPER_ADMIN'),
+  asyncHandler(deleteProductAdmin)
+);
 
 // ============================================================
 // RBAC: Dashboard Routes (role-protected)
@@ -150,7 +198,7 @@ apiRouter.get('/dashboard/trainer',
 );
 
 apiRouter.get('/dashboard/customer',
-  authenticate, authorize('CUSTOMER'),
+  authenticate,
   asyncHandler(getCustomerDashboard)
 );
 

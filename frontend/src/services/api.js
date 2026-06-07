@@ -446,3 +446,81 @@ export async function deleteCommissionRuleApi(id) {
     method: "DELETE",
   });
 }
+
+// ============================================================
+// Contact Message APIs
+// ============================================================
+
+export async function submitContactMessage(data) {
+  return request(`${API_BASE}/contact`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getContactMessages(page = 1) {
+  return request(`${API_BASE}/contact?page=${page}`);
+}
+
+export async function markContactMessageRead(id) {
+  return request(`${API_BASE}/contact/${id}/read`, {
+    method: "PUT",
+  });
+}
+
+// ============================================================
+// Newsletter Admin APIs
+// ============================================================
+
+export async function getNewsletterSubscribers(page = 1) {
+  return request(`${API_BASE}/newsletter/subscribers?page=${page}`);
+}
+
+// ============================================================
+// Product Admin APIs (Super Admin CRUD)
+// ============================================================
+
+export async function getAllProductsAdmin(page = 1) {
+  return request(`${API_BASE}/products/admin/all?page=${page}`);
+}
+
+export async function createProduct(data) {
+  return request(`${API_BASE}/products`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateProduct(id, data) {
+  return request(`${API_BASE}/products/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteProductAdmin(id) {
+  return request(`${API_BASE}/products/${id}`, {
+    method: "DELETE",
+  });
+}
+
+// ============================================================
+// Order Admin APIs (Super Admin)
+// ============================================================
+
+export async function getAdminOrders({ search, status, page = 1 } = {}) {
+  const params = new URLSearchParams();
+  if (search) params.set("search", search);
+  if (status) params.set("status", status);
+  params.set("page", page);
+  return request(`${API_BASE}/orders/admin/all?${params.toString()}`);
+}
+
+export async function updateOrderStatusApi(id, status) {
+  return request(`${API_BASE}/orders/${id}/status`, {
+    method: "PUT",
+    body: JSON.stringify({ status }),
+  });
+}
+
+

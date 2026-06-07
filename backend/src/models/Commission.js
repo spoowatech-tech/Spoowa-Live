@@ -152,5 +152,17 @@ export async function getAllCommissionBreakdown(limit = 50, offset = 0) {
      FROM commissions`
   );
 
-  return { commissions: rows, summary: summary[0] };
+  const [userBreakdown] = await pool.execute(
+    `SELECT u.id, u.name, u.role, 
+            SUM(o.total) as total_revenue, 
+            SUM(c.amount) as total_commission,
+            SUM(CASE WHEN c.status = 'pending' THEN c.amount ELSE 0 END) as pending_commission
+     FROM commissions c
+     JOIN users u ON c.user_id = u.id
+     JOIN orders o ON c.order_id = o.id
+     GROUP BY u.id, u.name, u.role
+     ORDER BY total_revenue DESC`
+  );
+
+  return { commissions: rows, summary: summary[0], user_breakdown: userBreakdown };
 }

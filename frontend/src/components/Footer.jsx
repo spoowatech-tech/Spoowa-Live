@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Mail, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import logo from "@/assets/logo.png";
 import logoSpefl from "@/assets/logo_spefl.png";
@@ -135,11 +134,15 @@ export function Footer() {
           <div className="lg:col-span-2">
             <p className="text-[10px] font-extrabold tracking-[0.22em] text-white/30 uppercase mb-4">Support</p>
             <ul className="space-y-3">
-              {["FAQs", "Contact Us", "Shipping Info", "Returns"].map(item => (
-                <li key={item}>
-                  <a href="#" className="text-sm text-white/55 hover:text-[#F4B000] font-medium transition-colors duration-200">
-                    {item}
-                  </a>
+              {[
+                { label: "Contact Us", to: "/contact" },
+                { label: "Apply as Trainer", to: "/apply/trainer" },
+                { label: "Apply as Gym", to: "/apply/gym" },
+              ].map(({ label, to }) => (
+                <li key={label}>
+                  <Link to={to} className="text-sm text-white/55 hover:text-[#F4B000] font-medium transition-colors duration-200">
+                    {label}
+                  </Link>
                 </li>
               ))}
             </ul>

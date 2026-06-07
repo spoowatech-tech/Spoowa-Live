@@ -10,7 +10,9 @@ export default function GymApplicationPage() {
   const [form, setForm] = useState({
     facility_name: "", contact_person: "", email: "", mobile: "",
     address: "", bank_details: "", is_certified: false, referral_code: "",
+    remarks: ""
   });
+  const [hasReferral, setHasReferral] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [referralValid, setReferralValid] = useState(null);
@@ -24,8 +26,13 @@ export default function GymApplicationPage() {
     if (!form.referral_code.trim()) return;
     try {
       const result = await validateReferralCode(form.referral_code.trim());
+      if (result.referrer_role !== 'CITY_DISTRIBUTOR') {
+        toast.error("Please enter a City Distributor referral code (CD-xxxx)");
+        setReferralValid(null);
+        return;
+      }
       setReferralValid(result);
-      toast.success(`Valid! Referred by ${result.referrer_name}`);
+      toast.success(`Valid! Linked to city: ${result.referrer_name}`);
     } catch {
       setReferralValid(null);
       toast.error("Invalid referral code");
@@ -37,6 +44,20 @@ export default function GymApplicationPage() {
     if (!form.facility_name || !form.email || !form.mobile) {
       toast.error("Facility name, email, and mobile are required.");
       return;
+    }
+    if (hasReferral && !referralValid) {
+      toast.error("Please verify your City Distributor referral code first.");
+      return;
+    }
+    if (!hasReferral && !form.remarks.trim()) {
+      toast.error("Please provide remarks if you don't have a referral code.");
+      return;
+    }
+    
+    // If they have remarks instead of a code, pass it along
+    const payload = { ...form };
+    if (!hasReferral) {
+      payload.referral_code = `NO CODE - Remarks: ${form.remarks}`;
     }
     setSubmitting(true);
     try {
@@ -79,6 +100,63 @@ export default function GymApplicationPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-gray-100 p-6 sm:p-8 shadow-sm space-y-5">
+              
+              {/* Referral Code OR Remarks (Top of form) */}
+              <div className="p-5 rounded-2xl border border-gray-100 bg-[#FAFAFA] space-y-4">
+                <div className="flex items-center gap-4 border-b border-gray-200 pb-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="referral_type" checked={hasReferral} onChange={() => setHasReferral(true)}
+                      className="h-4 w-4 text-[#F4B000] focus:ring-[#F4B000]" />
+                    <span className="text-sm font-bold text-gray-800">I have a Referral Code</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="referral_type" checked={!hasReferral} onChange={() => setHasReferral(false)}
+                      className="h-4 w-4 text-[#F4B000] focus:ring-[#F4B000]" />
+                    <span className="text-sm font-bold text-gray-800">I don't have one</span>
+                  </label>
+                </div>
+
+                {hasReferral ? (
+                  <div>
+                    <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest block mb-2">
+                      City Distributor Referral Code <span className="text-red-400">*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        name="referral_code"
+                        value={form.referral_code}
+                        onChange={handleChange}
+                        placeholder="e.g. CD-A1B2C3D4"
+                        required={hasReferral}
+                        className="flex-1 h-12 rounded-xl border-2 border-gray-200 bg-white px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:border-[#F4B000] focus:shadow-sm"
+                      />
+                      <button type="button" onClick={handleReferralCheck}
+                        className="px-5 h-12 rounded-xl border-2 border-[#F4B000] bg-[#FFFDF7] text-xs font-black text-[#D88A00] uppercase tracking-wider hover:bg-[#F4B000] hover:text-white transition-colors">
+                        Verify
+                      </button>
+                    </div>
+                    {referralValid && (
+                      <p className="text-[10px] font-bold text-emerald-600 mt-1">✓ Linked to: {referralValid.referrer_name}</p>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest block mb-2">
+                      Remarks (How did you hear about us?) <span className="text-red-400">*</span>
+                    </label>
+                    <textarea
+                      name="remarks"
+                      value={form.remarks}
+                      onChange={handleChange}
+                      placeholder="Please briefly explain how you found SPOOWA..."
+                      required={!hasReferral}
+                      className="w-full min-h-[80px] p-4 rounded-xl border-2 border-gray-200 bg-white text-sm font-medium text-gray-900 outline-none transition-all focus:border-[#F4B000] focus:shadow-sm resize-none"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Standard Form Fields */}
               {[
                 { name: "facility_name", label: "Facility / Gym Name", type: "text", required: true },
                 { name: "contact_person", label: "Contact Person Name", type: "text" },
@@ -103,34 +181,11 @@ export default function GymApplicationPage() {
               ))}
 
               {/* Certified checkbox */}
-              <label className="flex items-center gap-3 cursor-pointer">
+              <label className="flex items-center gap-3 cursor-pointer pb-2">
                 <input type="checkbox" name="is_certified" checked={form.is_certified} onChange={handleChange}
                   className="h-5 w-5 rounded border-gray-300 text-[#F4B000] focus:ring-[#F4B000]" />
                 <span className="text-sm font-bold text-gray-700">This facility is certified</span>
               </label>
-
-              {/* Referral Code */}
-              <div>
-                <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest block mb-2">
-                  City Distributor Referral Code <span className="text-gray-300">(optional)</span>
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    name="referral_code"
-                    value={form.referral_code}
-                    onChange={handleChange}
-                    placeholder="e.g. CD-A1B2C3D4"
-                    className="flex-1 h-12 rounded-xl border-2 border-gray-200 bg-[#FAFAFA] px-4 text-sm font-bold text-gray-900 outline-none transition-all focus:bg-white focus:border-[#F4B000] focus:shadow-sm"
-                  />
-                  <button type="button" onClick={handleReferralCheck}
-                    className="px-5 h-12 rounded-xl border-2 border-gray-200 bg-gray-50 text-xs font-black text-gray-600 uppercase tracking-wider hover:bg-gray-100 transition-colors">
-                    Verify
-                  </button>
-                </div>
-                {referralValid && (
-                  <p className="text-[10px] font-bold text-emerald-600 mt-1">✓ Linked to: {referralValid.referrer_name}</p>
-                )}
-              </div>
 
               <button
                 type="submit"

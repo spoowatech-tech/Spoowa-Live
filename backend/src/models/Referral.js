@@ -84,42 +84,66 @@ export async function validateReferralCode(code) {
 /**
  * Resolve the full referral hierarchy for an order.
  * Given a customer's user_id, resolve: trainer → gym → city distributor.
+ * Handles:
+ *   - Trainer referral: trainer → gym → city
+ *   - Gym referral (direct): no trainer, gym → city
+ *   - City referral (direct): no trainer, no gym, just city
  * Returns { trainer_id, gym_distributor_id, city_distributor_id }
  */
 export async function resolveOrderHierarchy(customerUserId) {
   const pool = getPool();
 
-  // Get customer's trainer
-  const [custRows] = await pool.execute(
-    'SELECT trainer_id FROM customers WHERE user_id = ?',
+  // First check referral mapping to know the referrer's role
+  const [refMap] = await pool.execute(
+    'SELECT referrer_id, referrer_role FROM referral_mappings WHERE user_id = ?',
     [customerUserId]
   );
 
-  if (custRows.length === 0 || !custRows[0].trainer_id) {
+  if (refMap.length === 0) {
     return { trainer_id: null, gym_distributor_id: null, city_distributor_id: null };
   }
 
-  const trainerId = custRows[0].trainer_id;
+  const { referrer_id, referrer_role } = refMap[0];
 
-  // Get trainer's gym distributor
-  const [trainerRows] = await pool.execute(
-    'SELECT gym_distributor_id FROM trainers WHERE id = ?',
-    [trainerId]
-  );
+  // Case 1: Referred by a TRAINER
+  if (referrer_role === 'TRAINER_OR_RETAILER') {
+    const [custRows] = await pool.execute('SELECT trainer_id FROM customers WHERE user_id = ?', [customerUserId]);
+    const trainerId = custRows[0]?.trainer_id || null;
 
-  const gymDistributorId = trainerRows[0]?.gym_distributor_id || null;
+    let gymDistributorId = null;
+    let cityDistributorId = null;
 
-  // Get gym's city distributor
-  let cityDistributorId = null;
-  if (gymDistributorId) {
-    const [gymRows] = await pool.execute(
-      'SELECT city_distributor_id FROM gym_distributors WHERE id = ?',
-      [gymDistributorId]
-    );
-    cityDistributorId = gymRows[0]?.city_distributor_id || null;
+    if (trainerId) {
+      const [trainerRows] = await pool.execute('SELECT gym_distributor_id FROM trainers WHERE id = ?', [trainerId]);
+      gymDistributorId = trainerRows[0]?.gym_distributor_id || null;
+
+      if (gymDistributorId) {
+        const [gymRows] = await pool.execute('SELECT city_distributor_id FROM gym_distributors WHERE id = ?', [gymDistributorId]);
+        cityDistributorId = gymRows[0]?.city_distributor_id || null;
+      }
+    }
+
+    return { trainer_id: trainerId, gym_distributor_id: gymDistributorId, city_distributor_id: cityDistributorId };
   }
 
-  return { trainer_id: trainerId, gym_distributor_id: gymDistributorId, city_distributor_id: cityDistributorId };
+  // Case 2: Referred by a GYM (direct — skip trainer)
+  if (referrer_role === 'GYM_OR_AREA_DISTRIBUTOR') {
+    const [gdRows] = await pool.execute('SELECT id, city_distributor_id FROM gym_distributors WHERE user_id = ?', [referrer_id]);
+    const gymDistributorId = gdRows[0]?.id || null;
+    const cityDistributorId = gdRows[0]?.city_distributor_id || null;
+
+    return { trainer_id: null, gym_distributor_id: gymDistributorId, city_distributor_id: cityDistributorId };
+  }
+
+  // Case 3: Referred by a CITY DISTRIBUTOR (direct — skip trainer & gym)
+  if (referrer_role === 'CITY_DISTRIBUTOR') {
+    const [cdRows] = await pool.execute('SELECT id FROM city_distributors WHERE user_id = ?', [referrer_id]);
+    const cityDistributorId = cdRows[0]?.id || null;
+
+    return { trainer_id: null, gym_distributor_id: null, city_distributor_id: cityDistributorId };
+  }
+
+  return { trainer_id: null, gym_distributor_id: null, city_distributor_id: null };
 }
 
 /**

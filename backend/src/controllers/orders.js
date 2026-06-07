@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
-import { createOrder, findOrdersByUserId, findOrderById } from '../models/Order.js';
+import { createOrder, findOrdersByUserId, findOrderById, findAllOrdersAdmin, updateOrderStatus } from '../models/Order.js';
 import { resolveOrderHierarchy } from '../models/Referral.js';
 import { createCommissionsForOrder } from '../models/Commission.js';
 import { incrementCustomerOrderStats } from '../models/Customer.js';
@@ -134,3 +134,30 @@ export async function getOrderById(req, res) {
   }
   res.json({ order });
 }
+
+/**
+ * GET /api/orders/admin/all
+ * Super Admin: List all orders with search & filter.
+ */
+export async function getAdminOrders(req, res) {
+  const { search, status, page = 1, limit = 50 } = req.query;
+  const offset = (Number(page) - 1) * Number(limit);
+  const result = await findAllOrdersAdmin({ search, status, limit: Number(limit), offset });
+  res.json(result);
+}
+
+/**
+ * PUT /api/orders/:id/status
+ * Super Admin: Update order status.
+ */
+export async function updateOrderStatusAdmin(req, res) {
+  const { id } = req.params;
+  const { status } = req.body;
+  const validStatuses = ['confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: 'Invalid status.' });
+  }
+  await updateOrderStatus(id, status);
+  res.json({ message: 'Order status updated.' });
+}
+

@@ -29,7 +29,10 @@ export async function validateReferralCode(req, res) {
 /**
  * POST /api/referrals/apply
  * Apply a referral code to link a user to a referrer (authenticated).
- * Also populates the network_hierarchy table for chain tracking.
+ * Handles trainer, gym, and city distributor codes.
+ * - Trainer code: links customer → trainer → gym → city (full chain)
+ * - Gym code: links customer → gym → city (skips trainer)
+ * - City code: links customer → city (skips trainer & gym)
  */
 export async function applyReferralCode(req, res) {
   const { code } = req.body;
@@ -55,43 +58,48 @@ export async function applyReferralCode(req, res) {
     return res.status(400).json({ error: 'You cannot use your own referral code.' });
   }
 
-  // Create mapping
+  // Create referral mapping
   await createReferralMapping(userId, result.referrer_id, result.referrer_role, code);
 
-  // Also link the customer to the trainer if applicable
   const pool = getPool();
-  if (result.referrer_role === 'TRAINER_OR_RETAILER') {
-    const [trainer] = await pool.execute('SELECT id FROM trainers WHERE user_id = ?', [result.referrer_id]);
-    if (trainer.length > 0) {
-      // Update or create customer record
-      const [existingCust] = await pool.execute('SELECT id FROM customers WHERE user_id = ?', [userId]);
-      if (existingCust.length > 0) {
-        await pool.execute('UPDATE customers SET trainer_id = ? WHERE user_id = ?', [trainer[0].id, userId]);
-      } else {
-        await pool.execute('INSERT INTO customers (user_id, trainer_id) VALUES (?, ?)', [userId, trainer[0].id]);
-      }
-    }
+
+  // Ensure customer record exists for the user
+  const [existingCust] = await pool.execute('SELECT id FROM customers WHERE user_id = ?', [userId]);
+  let customerId;
+  if (existingCust.length > 0) {
+    customerId = existingCust[0].id;
+  } else {
+    const [cr] = await pool.execute('INSERT INTO customers (user_id) VALUES (?)', [userId]);
+    customerId = cr.insertId;
   }
 
-  // --- Populate network_hierarchy ---
-  try {
-    // Ensure customer record exists
-    const [custRows] = await pool.execute('SELECT id FROM customers WHERE user_id = ?', [userId]);
-    if (custRows.length > 0) {
-      const customerId = custRows[0].id;
-      const hierarchy = await resolveOrderHierarchy(userId);
-      
-      // Resolve gym_id (same as area_distributor_id in our schema)
-      await createOrUpdateHierarchy(customerId, {
-        trainer_id: hierarchy.trainer_id || null,
-        area_distributor_id: hierarchy.gym_distributor_id || null,
-        gym_id: hierarchy.gym_distributor_id || null,
-        city_distributor_id: hierarchy.city_distributor_id || null,
-      });
+  // Link based on referrer role
+  if (result.referrer_role === 'TRAINER_OR_RETAILER') {
+    // Trainer code: link customer to this trainer
+    const [trainer] = await pool.execute('SELECT id, gym_distributor_id FROM trainers WHERE user_id = ?', [result.referrer_id]);
+    if (trainer.length > 0) {
+      await pool.execute('UPDATE customers SET trainer_id = ? WHERE user_id = ?', [trainer[0].id, userId]);
     }
+  } else if (result.referrer_role === 'GYM_OR_AREA_DISTRIBUTOR') {
+    // Gym code: skip trainer, link customer directly via gym
+    // No trainer_id set on customer — commission goes to gym directly
+    // Nothing to update on customer's trainer_id
+  } else if (result.referrer_role === 'CITY_DISTRIBUTOR') {
+    // City code: commission goes directly to city distributor
+    // No trainer or gym linkage needed
+  }
+
+  // Populate network_hierarchy for commission resolution
+  try {
+    const hierarchy = await resolveOrderHierarchy(userId);
+    await createOrUpdateHierarchy(customerId, {
+      trainer_id: hierarchy.trainer_id || null,
+      area_distributor_id: hierarchy.gym_distributor_id || null,
+      gym_id: hierarchy.gym_distributor_id || null,
+      city_distributor_id: hierarchy.city_distributor_id || null,
+    });
   } catch (err) {
     console.error('[NetworkHierarchy] Error populating hierarchy:', err.message);
-    // Non-blocking — referral is already applied
   }
 
   res.json({

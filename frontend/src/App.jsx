@@ -12,6 +12,7 @@ import Shop from './pages/Shop';
 import Wishlist from './pages/Wishlist';
 import Checkout from './pages/Checkout';
 import NotFound from './pages/NotFound';
+import ContactUs from './pages/ContactUs';
 import RetailerDashboard from './pages/RetailerDashboard';
 import DistributorDashboard from './pages/DistributorDashboard';
 
@@ -25,6 +26,7 @@ import CustomerAccount from './pages/dashboards/CustomerAccount';
 // Application Pages
 import TrainerApplicationPage from './pages/applications/TrainerApplicationPage';
 import GymApplicationPage from './pages/applications/GymApplicationPage';
+import ApplyForRolesPage from './pages/applications/ApplyForRolesPage';
 
 // Protected Route
 import ProtectedRoute from './components/ProtectedRoute';
@@ -76,12 +78,14 @@ function App() {
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/wishlist" element={<Wishlist />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/contact" element={<ContactUs />} />
 
                 {/* Legacy Routes (preserved) */}
                 <Route path="/retailer/dashboard" element={<RetailerDashboard />} />
                 <Route path="/distributor/dashboard" element={<DistributorDashboard />} />
 
                 {/* Public Application Pages */}
+                <Route path="/apply" element={<ApplyForRolesPage />} />
                 <Route path="/apply/trainer" element={<TrainerApplicationPage />} />
                 <Route path="/apply/gym" element={<GymApplicationPage />} />
 
@@ -111,7 +115,7 @@ function App() {
                 } />
 
                 <Route path="/customer/account" element={
-                  <ProtectedRoute roles={['CUSTOMER']}>
+                  <ProtectedRoute roles={['CUSTOMER', 'SUPER_ADMIN', 'CITY_DISTRIBUTOR', 'GYM_OR_AREA_DISTRIBUTOR', 'TRAINER_OR_RETAILER']}>
                     <CustomerAccount />
                   </ProtectedRoute>
                 } />

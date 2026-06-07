@@ -340,10 +340,47 @@ export async function getTrainerDashboard(req, res) {
 
 /**
  * GET /api/dashboard/customer
- * Customer account data.
+ * Account data — works for ALL roles (profile page).
  */
 export async function getCustomerDashboard(req, res) {
   const userId = req.user.id;
-  const accountData = await getCustomerAccountData(userId);
-  res.json(accountData);
+  const pool = getPool();
+
+  // Recent orders (all users have orders)
+  const [orders] = await pool.execute(
+    `SELECT id, subtotal, total, status, created_at 
+     FROM orders WHERE user_id = ? 
+     ORDER BY created_at DESC LIMIT 10`,
+    [userId]
+  );
+
+  // Order totals
+  const [orderTotals] = await pool.execute(
+    `SELECT COUNT(*) as total_orders, COALESCE(SUM(total), 0) as total_spent FROM orders WHERE user_id = ?`,
+    [userId]
+  );
+
+  // Saved addresses
+  const [addresses] = await pool.execute(
+    `SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC`,
+    [userId]
+  );
+
+  // Referral info
+  const [referral] = await pool.execute(
+    `SELECT rm.*, u.name as referrer_name 
+     FROM referral_mappings rm 
+     LEFT JOIN users u ON rm.referrer_id = u.id 
+     WHERE rm.user_id = ?`,
+    [userId]
+  );
+
+  res.json({
+    orders,
+    addresses,
+    referral: referral[0] || null,
+    total_orders: orderTotals[0].total_orders,
+    total_spent: Number(orderTotals[0].total_spent),
+  });
 }
+

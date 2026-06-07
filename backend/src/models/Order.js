@@ -116,3 +116,59 @@ export async function findOrderById(orderId, userId) {
 
   return order;
 }
+
+/**
+ * Find all orders (Super Admin) with items, customer info, address.
+ */
+export async function findAllOrdersAdmin({ search, status, limit = 50, offset = 0 } = {}) {
+  const pool = getPool();
+  let where = '1=1';
+  const params = [];
+
+  if (status && status !== 'all') {
+    where += ' AND o.status = ?';
+    params.push(status);
+  }
+  if (search) {
+    where += ' AND (o.id LIKE ? OR u.name LIKE ? OR u.email LIKE ?)';
+    const s = `%${search}%`;
+    params.push(s, s, s);
+  }
+
+  const [orders] = await pool.query(
+    `SELECT o.*, u.name as customer_name, u.email as customer_email, u.phone as customer_phone,
+            a.full_name as addr_name, a.phone as addr_phone, a.address_line, a.city, a.state, a.pin_code
+     FROM orders o
+     JOIN users u ON o.user_id = u.id
+     LEFT JOIN addresses a ON o.address_id = a.id
+     WHERE ${where}
+     ORDER BY o.created_at DESC
+     LIMIT ${Number(limit)} OFFSET ${Number(offset)}`,
+    params
+  );
+
+  const [countResult] = await pool.query(
+    `SELECT COUNT(*) as total FROM orders o JOIN users u ON o.user_id = u.id WHERE ${where}`,
+    params
+  );
+
+  // Fetch items for each order
+  for (const order of orders) {
+    const [items] = await pool.execute(
+      `SELECT oi.*, p.name, p.image FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?`,
+      [order.id]
+    );
+    order.items = items;
+  }
+
+  return { orders, total: countResult[0].total };
+}
+
+/**
+ * Update order status (Super Admin).
+ */
+export async function updateOrderStatus(orderId, status) {
+  const pool = getPool();
+  await pool.execute('UPDATE orders SET status = ? WHERE id = ?', [status, orderId]);
+}
+
