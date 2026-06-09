@@ -1,17 +1,8 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { getProfile, loginUser, signupRequest, signupVerify, googleLogin, logoutUser, isLoggedIn } from '../services/api';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { loginCustomer, getCustomerProfile, logoutCustomer, isLoggedIn, registerCustomer, storeSocialToken, createCustomerFromSocial } from '../services/api';
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
-
-// Role hierarchy for permission checks
-const ROLE_HIERARCHY = {
-  SUPER_ADMIN: 5,
-  CITY_DISTRIBUTOR: 4,
-  GYM_OR_AREA_DISTRIBUTOR: 3,
-  TRAINER_OR_RETAILER: 2,
-  CUSTOMER: 1,
-};
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -21,88 +12,127 @@ export function AuthProvider({ children }) {
     async function loadUser() {
       if (isLoggedIn()) {
         try {
-          const data = await getProfile();
-          setUser(data.user);
+          const data = await getCustomerProfile();
+          setUser(data.customer);
         } catch (error) {
           console.error('Failed to load profile:', error);
-          await logoutUser();
+          await logoutCustomer();
         }
       }
       setLoading(false);
     }
     loadUser();
-
-    const handleUnauthorized = async () => {
-      setUser(null);
-      toast.error('Session expired. Please log in again.');
-    };
-    window.addEventListener('auth:unauthorized', handleUnauthorized);
-    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
   }, []);
 
   const login = async (email, password) => {
-    const data = await loginUser(email, password);
-    setUser(data.user);
+    const data = await loginCustomer(email, password);
+    // After login, fetch customer profile
+    const profile = await getCustomerProfile();
+    setUser(profile.customer);
     toast.success('Logged in successfully!');
     return data;
   };
 
-  const loginWithGoogle = async (credential) => {
-    const data = await googleLogin(credential);
-    setUser(data.user);
-    toast.success('Logged in with Google!');
-    return data;
-  };
+  const register = async ({ first_name, last_name, email, password }) => {
+    // Medusa v2: first register via auth, then create customer
+    // Step 1: Create auth identity
+    const authData = await fetch('/auth/customer/emailpass/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
 
-  const requestSignup = async (name, email, password, phone) => {
-    const data = await signupRequest(name, email, password, phone);
-    toast.success('Verification code sent to ' + phone);
-    return data;
-  };
+    if (!authData.ok) {
+      const err = await authData.json().catch(() => ({}));
+      throw new Error(err.message || 'Registration failed');
+    }
 
-  const verifySignup = async (name, email, password, phone, code) => {
-    const data = await signupVerify(name, email, password, phone, code);
-    setUser(data.user);
+    const { token } = await authData.json();
+    localStorage.setItem('medusa_token', token);
+
+    // Step 2: Create the customer record
+    const customerData = await registerCustomer({ first_name, last_name, email, password });
+    setUser(customerData.customer);
     toast.success('Account created successfully!');
-    return data;
+    return customerData;
   };
+
+  /**
+   * Handle social OAuth callback.
+   * Called by AuthCallback page after receiving a token from the backend.
+   * 
+   * Flow:
+   * 1. Store the JWT token
+   * 2. Fetch the customer profile
+   * 3. If no customer exists (first-time social login), create one
+   * 4. Set the user state
+   */
+  const handleSocialCallback = useCallback(async (token) => {
+    // Store the token from OAuth callback
+    storeSocialToken(token);
+
+    try {
+      // Try to fetch existing customer profile
+      const profile = await getCustomerProfile();
+      setUser(profile.customer);
+      toast.success('Logged in successfully!');
+    } catch (profileError) {
+      // Customer doesn't exist yet (first-time social login)
+      // Decode JWT token to get user info from Google/Facebook
+      try {
+        let profileData = {};
+        if (token) {
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          }).join(''));
+          const decoded = JSON.parse(jsonPayload);
+          
+          if (decoded.user_metadata) {
+            profileData = {
+              email: decoded.user_metadata.email,
+              first_name: decoded.user_metadata.given_name || decoded.user_metadata.first_name || '',
+              last_name: decoded.user_metadata.family_name || decoded.user_metadata.last_name || '',
+            };
+            // Fallback for full name splitting if given/family names aren't provided
+            if (!profileData.first_name && decoded.user_metadata.name) {
+              const parts = decoded.user_metadata.name.split(' ');
+              profileData.first_name = parts[0];
+              profileData.last_name = parts.slice(1).join(' ');
+            }
+          }
+        }
+
+        const customerData = await createCustomerFromSocial(profileData);
+        setUser(customerData.customer);
+        toast.success('Account created successfully!');
+      } catch (createError) {
+        console.error('Failed to create customer from social login:', createError);
+        // Still logged in via auth, just no customer record yet
+        toast.success('Logged in successfully, but profile creation failed.');
+      }
+    }
+  }, []);
 
   const logout = async () => {
-    await logoutUser();
+    await logoutCustomer();
     setUser(null);
     toast.success('Logged out');
   };
 
-  // Role helpers
-  const hasRole = (role) => user?.role === role;
-  const isAdmin = () => user?.role === 'SUPER_ADMIN';
-  const isCityDistributor = () => user?.role === 'CITY_DISTRIBUTOR';
-  const isGymDistributor = () => user?.role === 'GYM_OR_AREA_DISTRIBUTOR';
-  const isTrainer = () => user?.role === 'TRAINER_OR_RETAILER';
-  const isCustomer = () => user?.role === 'CUSTOMER';
-
-  const canAccess = (requiredRole) => {
-    if (!user?.role) return false;
-    return (ROLE_HIERARCHY[user.role] || 0) >= (ROLE_HIERARCHY[requiredRole] || 0);
-  };
+  // Simple role helpers (Medusa doesn't have RBAC roles like the old system)
+  const isAdmin = () => false; // Admin is handled by Medusa's built-in admin panel
 
   return (
     <AuthContext.Provider value={{
       user,
       loading,
       login,
-      loginWithGoogle,
-      requestSignup,
-      verifySignup,
+      register,
       logout,
-      // Role helpers
-      hasRole,
       isAdmin,
-      isCityDistributor,
-      isGymDistributor,
-      isTrainer,
-      isCustomer,
-      canAccess,
+      handleSocialCallback,
     }}>
       {children}
     </AuthContext.Provider>
@@ -112,3 +142,4 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
+

@@ -16,10 +16,25 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
+      '/store': {
+        target: 'http://localhost:9000',
         changeOrigin: true,
       },
+      // Only proxy /auth/customer/* API calls to Medusa backend
+      // This avoids conflicting with the frontend /auth page route
+      '/auth/customer': {
+        target: 'http://localhost:9000',
+        changeOrigin: true,
+      },
+      '/admin': {
+        target: 'http://localhost:9000',
+        changeOrigin: true,
+      },
+      '/health': {
+        target: 'http://localhost:9000',
+        changeOrigin: true,
+      }
     },
   },
 });
+

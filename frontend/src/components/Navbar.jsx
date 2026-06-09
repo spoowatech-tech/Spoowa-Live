@@ -1,10 +1,9 @@
-import { Search, User, ShoppingBag, Menu, LogOut, Package, X, ChevronRight, Heart, Shield, Building2, Dumbbell, UserCheck, Truck, Briefcase } from "lucide-react";
+import { Search, User, ShoppingBag, Menu, LogOut, X, ChevronRight } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
-import { useWishlist } from "@/context/WishlistContext";
 import logo from "@/assets/logo.png";
 
 const TICKER_ITEMS = [
@@ -35,14 +34,6 @@ export function AnnouncementBar() {
   );
 }
 
-// All role dashboard icons — Super Admin sees ALL, others see only their own
-const ALL_ROLE_ICONS = [
-  { role: "SUPER_ADMIN", to: "/admin/dashboard", icon: Shield, label: "Admin", color: "text-red-500 hover:bg-red-50" },
-  { role: "CITY_DISTRIBUTOR", to: "/city-distributor/dashboard", icon: Building2, label: "City", color: "text-blue-500 hover:bg-blue-50" },
-  { role: "GYM_OR_AREA_DISTRIBUTOR", to: "/gym-distributor/dashboard", icon: Dumbbell, label: "Gym", color: "text-purple-500 hover:bg-purple-50" },
-  { role: "TRAINER_OR_RETAILER", to: "/trainer/dashboard", icon: UserCheck, label: "Trainer", color: "text-green-500 hover:bg-green-50" },
-];
-
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -53,17 +44,7 @@ export function Navbar() {
   const location = useLocation();
   const { user, logout } = useAuth();
   const { summary } = useCart();
-  const { items: wishlistItems } = useWishlist();
   const cartCount = summary?.totalItems || 0;
-  const wishlistCount = wishlistItems?.length || 0;
-
-  // Determine which dashboard icons to show based on role
-  // Super Admin sees ALL role icons for testing purposes
-  const visibleRoleIcons = user
-    ? user.role === "SUPER_ADMIN"
-      ? ALL_ROLE_ICONS // Super admin sees all
-      : ALL_ROLE_ICONS.filter(r => r.role === user.role) // Others see only their own
-    : [];
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 8);
@@ -93,18 +74,13 @@ export function Navbar() {
   useEffect(() => { setOpen(false); }, [location.pathname]);
 
   const links = [
-    { label: "Home", to: "/" },
     { label: "Shop", to: "/shop" },
-    { label: "About Us", to: "/about" },
-    { label: "Team", to: "/team" },
-    { label: "Contact", to: "/contact" },
-    { label: "Apply", to: "/apply" },
+    { label: "Cart", to: "/cart" },
   ];
 
-  const isActive = (to) => {
-    if (to === "/") return location.pathname === "/";
-    return location.pathname.startsWith(to);
-  };
+  const isActive = (to) => location.pathname.startsWith(to);
+
+  const displayName = user?.first_name || user?.name || user?.email || "U";
 
   return (
     <header
@@ -114,7 +90,7 @@ export function Navbar() {
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link to="/" className="inline-flex items-center shrink-0">
+        <Link to="/shop" className="inline-flex items-center shrink-0">
           <img src={logo} alt="SPOOWA Logo" className="h-9 w-auto object-contain" />
         </Link>
 
@@ -142,23 +118,7 @@ export function Navbar() {
 
         {/* Action icons */}
         <div className="flex items-center gap-1.5">
-          {/* Role Dashboard Icons (visible in desktop) */}
-          {visibleRoleIcons.length > 0 && (
-            <div className="hidden sm:flex items-center gap-1 mr-1 border-r border-gray-100 pr-2">
-              {visibleRoleIcons.map((ri) => (
-                <Link
-                  key={ri.role}
-                  to={ri.to}
-                  title={ri.label}
-                  className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${ri.color}`}
-                >
-                  <ri.icon className="h-4 w-4" />
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {/* Profile icon — opens My Account for ALL roles */}
+          {/* Profile icon */}
           <div className="relative hidden sm:inline-block" ref={dropdownRef}>
             {user ? (
               <button
@@ -166,7 +126,7 @@ export function Navbar() {
                 className="flex items-center gap-2 rounded-full p-1.5 hover:bg-muted transition-colors"
               >
                 <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#F4B000] to-[#E59700] text-white grid place-items-center uppercase text-xs font-bold shadow-[0_4px_12px_rgba(244,176,0,0.30)]">
-                  {user.name?.charAt(0)}
+                  {displayName.charAt(0)}
                 </div>
               </button>
             ) : (
@@ -187,23 +147,15 @@ export function Navbar() {
                   <div className="px-4 py-3.5 bg-gradient-to-br from-[#FFF8E8] to-white border-b border-gray-100">
                     <div className="flex items-center gap-3">
                       <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#F4B000] to-[#E59700] text-white grid place-items-center uppercase text-sm font-bold shrink-0 shadow-sm">
-                        {user.name?.charAt(0)}
+                        {displayName.charAt(0)}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-[#2B1D12] truncate">{user.name}</p>
+                        <p className="text-sm font-bold text-[#2B1D12] truncate">{displayName}</p>
                         <p className="text-xs text-gray-500 truncate">{user.email}</p>
                       </div>
                     </div>
                   </div>
                   <div className="py-1.5">
-                    {/* My Account (Profile) — available to ALL roles */}
-                    <Link
-                      to="/customer/account"
-                      onClick={() => setUserDropdownOpen(false)}
-                      className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-[#FFF8E8] hover:text-[#D88A00] transition-colors"
-                    >
-                      <User className="h-4 w-4 shrink-0 text-amber-500" /> My Profile
-                    </Link>
                     <button
                       onClick={() => { logout(); setUserDropdownOpen(false); }}
                       className="w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors"
@@ -215,19 +167,6 @@ export function Navbar() {
               )}
             </AnimatePresence>
           </div>
-
-          {/* Wishlist */}
-          <Link to="/wishlist" aria-label="Wishlist" className="relative inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors">
-            <Heart className="h-5 w-5 text-foreground/70" />
-            <AnimatePresence>
-              {wishlistCount > 0 && (
-                <motion.span key={wishlistCount} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
-                  className="absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] px-1 place-items-center rounded-full bg-gradient-to-br from-[#EF4444] to-[#B91C1C] text-[9px] font-bold text-white shadow-sm">
-                  {wishlistCount > 99 ? "99+" : wishlistCount}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </Link>
 
           {/* Cart */}
           <Link to="/cart" aria-label="Cart" className="relative inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-muted transition-colors">
@@ -258,7 +197,7 @@ export function Navbar() {
             <motion.div
               initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="fixed right-0 top-0 z-50 h-full w-[78vw] max-w-[320px] bg-white shadow-[−20px_0_60px_rgba(0,0,0,0.12)] lg:hidden flex flex-col"
+              className="fixed right-0 top-0 z-50 h-full w-[78vw] max-w-[320px] bg-white shadow-2xl lg:hidden flex flex-col"
             >
               <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
                 <img src={logo} alt="SPOOWA" className="h-8 w-auto object-contain" />
@@ -286,28 +225,13 @@ export function Navbar() {
                   <>
                     <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FFF8E8]">
                       <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#F4B000] to-[#E59700] text-white grid place-items-center uppercase text-sm font-bold shadow-sm shrink-0">
-                        {user.name?.charAt(0)}
+                        {displayName.charAt(0)}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-[#2B1D12] truncate">{user.name}</p>
+                        <p className="text-sm font-bold text-[#2B1D12] truncate">{displayName}</p>
                         <p className="text-xs text-gray-500 truncate">{user.email}</p>
                       </div>
                     </div>
-
-                    {/* Role dashboard icons in mobile */}
-                    {visibleRoleIcons.map((ri) => (
-                      <Link key={ri.role} to={ri.to} onClick={() => setOpen(false)}
-                        className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-[#FFF8E8] transition-colors">
-                        <ri.icon className={`h-4 w-4 ${ri.color.split(' ')[0]}`} /> {ri.label} Dashboard
-                      </Link>
-                    ))}
-
-                    {/* Profile link for all */}
-                    <Link to="/customer/account" onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-[#FFF8E8] transition-colors">
-                      <User className="h-4 w-4 text-amber-500" /> My Profile
-                    </Link>
-
                     <button onClick={() => { logout(); setOpen(false); }}
                       className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 transition-colors">
                       <LogOut className="h-4 w-4" /> Sign Out

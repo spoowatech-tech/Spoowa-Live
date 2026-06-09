@@ -1,299 +1,346 @@
-const API_BASE = "/api";
+// ============================================================
+// Medusa.js Store API Client
+// ============================================================
+
+const MEDUSA_BACKEND_URL = "/store";
+const ADMIN_API_URL = "/admin";
 
 // ============================================================
-// Token Management
+// Publishable API Key — Medusa v2 requires this for store APIs
+// We'll set this after creating one in the admin panel.
+// For now, we'll try without it and add it later.
+// ============================================================
+let publishableApiKey = "pk_07791845c900f091e7f5b693339231019cc5275860f3098c1288772a37a3f5a1";
+
+export function setPublishableApiKey(key) {
+  // Not needed if hardcoded
+}
+
+// ============================================================
+// Token Management (Medusa customer auth)
 // ============================================================
 
 function getToken() {
-  return localStorage.getItem("spoowa_token");
+  return localStorage.getItem("medusa_token");
 }
 
 function setToken(token) {
-  localStorage.setItem("spoowa_token", token);
+  localStorage.setItem("medusa_token", token);
 }
 
 function removeToken() {
-  localStorage.removeItem("spoowa_token");
+  localStorage.removeItem("medusa_token");
 }
 
-function getAuthHeaders() {
-  const token = getToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
+// ============================================================
+// Cart ID Management
+// ============================================================
+
+function getCartId() {
+  return localStorage.getItem("medusa_cart_id");
 }
+
+function setCartId(id) {
+  localStorage.setItem("medusa_cart_id", id);
+}
+
+function removeCartId() {
+  localStorage.removeItem("medusa_cart_id");
+}
+
+// ============================================================
+// Generic Request Helper
+// ============================================================
 
 async function request(url, options = {}) {
   const headers = {
     "Content-Type": "application/json",
-    ...getAuthHeaders(),
     ...options.headers,
   };
 
-  // Ensure cookies are sent with requests for refresh tokens
-  const fetchOptions = { ...options, headers, credentials: "include" };
-
-  let response = await fetch(url, fetchOptions);
-
-  if (response.status === 401 && !url.includes('/auth/refresh') && !url.includes('/auth/login')) {
-    // Try refreshing the token
-    try {
-      const refreshRes = await fetch(`${API_BASE}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include' // Important: send http-only cookie
-      });
-      
-      if (refreshRes.ok) {
-        const { token } = await refreshRes.json();
-        setToken(token);
-        
-        // Retry original request with new token
-        fetchOptions.headers.Authorization = `Bearer ${token}`;
-        response = await fetch(url, fetchOptions);
-      } else {
-        removeToken();
-        window.dispatchEvent(new Event('auth:unauthorized'));
-      }
-    } catch (e) {
-      removeToken();
-      window.dispatchEvent(new Event('auth:unauthorized'));
-    }
+  const token = getToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
   }
+
+  if (publishableApiKey) {
+    headers["x-publishable-api-key"] = publishableApiKey;
+  }
+
+  const fetchOptions = { ...options, headers, credentials: "include", cache: "no-store" };
+
+  const response = await fetch(url, fetchOptions);
 
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
-    throw new Error(data.error || `API error: ${response.status}`);
+    const errorMsg = data.message || data.error || `API error: ${response.status}`;
+    throw new Error(errorMsg);
+  }
+
+  // Handle 204 No Content
+  if (response.status === 204) {
+    return {};
   }
 
   return response.json();
 }
 
 // ============================================================
-// Auth API
+// Auth API (Medusa v2 Customer Auth)
 // ============================================================
 
-export async function signupRequest(name, email, password, phone) {
-  return request(`${API_BASE}/auth/signup-request`, {
+export async function registerCustomer({ first_name, last_name, email, password }) {
+  // Step 1: Register the customer
+  const data = await request(`${MEDUSA_BACKEND_URL}/customers`, {
     method: "POST",
-    body: JSON.stringify({ name, email, password, phone }),
+    body: JSON.stringify({ first_name, last_name, email }),
   });
-}
 
-export async function signupVerify(name, email, password, phone, code) {
-  const data = await request(`${API_BASE}/auth/signup-verify`, {
-    method: "POST",
-    body: JSON.stringify({ name, email, password, phone, code }),
-  });
-  if (data.token) setToken(data.token);
   return data;
 }
 
-export async function googleLogin(credential) {
-  const data = await request(`${API_BASE}/auth/google`, {
-    method: "POST",
-    body: JSON.stringify({ credential }),
-  });
-  if (data.token) setToken(data.token);
-  return data;
-}
-
-export async function loginUser(email, password) {
-  const data = await request(`${API_BASE}/auth/login`, {
+export async function loginCustomer(email, password) {
+  // Medusa v2 auth: POST /auth/customer/emailpass
+  const authData = await request(`/auth/customer/emailpass`, {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
-  if (data.token) setToken(data.token);
-  return data;
+
+  if (authData.token) {
+    setToken(authData.token);
+  }
+
+  return authData;
 }
 
-export async function getProfile() {
-  return request(`${API_BASE}/auth/profile`);
+export async function getCustomerProfile() {
+  return request(`${MEDUSA_BACKEND_URL}/customers/me`);
 }
 
-export async function logoutUser() {
-  try {
-    await request(`${API_BASE}/auth/logout`, { method: "POST" });
-  } catch (e) {}
+export async function logoutCustomer() {
   removeToken();
+  // Medusa v2 doesn't have a logout endpoint per se,
+  // we just remove the token
 }
 
 export function isLoggedIn() {
   return !!getToken();
 }
 
-export async function forgotPasswordRequest(identifier) {
-  return request(`${API_BASE}/auth/forgot-password/request`, {
+// ============================================================
+// Social Auth Helpers (Google / Facebook OAuth)
+// ============================================================
+
+/**
+ * Returns the backend URL to initiate a social OAuth flow.
+ * Redirecting the browser to this URL will start the OAuth consent screen.
+ * @param {'google' | 'facebook'} provider
+ */
+export function getSocialAuthUrl(provider) {
+  // This hits the Medusa backend directly (not proxied /store)
+  // The Vite proxy forwards /auth/* to the backend
+  return `/auth/customer/${provider}`;
+}
+
+/**
+ * After social login, the user may not have a customer record yet.
+ * This creates one using the token from the OAuth flow.
+ */
+export async function createCustomerFromSocial(profileData = {}) {
+  return request(`${MEDUSA_BACKEND_URL}/customers`, {
     method: "POST",
-    body: JSON.stringify({ identifier }),
+    body: JSON.stringify(profileData),
   });
 }
 
-export async function forgotPasswordVerify(identifier, code) {
-  return request(`${API_BASE}/auth/forgot-password/verify`, {
-    method: "POST",
-    body: JSON.stringify({ identifier, code }),
-  });
+/**
+ * Store a social auth token and mark the user as logged in.
+ * @param {string} token - JWT token from social auth callback
+ */
+export function storeSocialToken(token) {
+  setToken(token);
 }
 
-export async function resetPassword(resetToken, newPassword) {
-  return request(`${API_BASE}/auth/forgot-password/reset`, {
-    method: "POST",
-    body: JSON.stringify({ resetToken, newPassword }),
-  });
-}
 
 // ============================================================
 // Products API
 // ============================================================
 
-export async function getProducts(filters = {}) {
-  const params = new URLSearchParams();
-  if (filters.type) params.set("type", Array.isArray(filters.type) ? filters.type.join(",") : filters.type);
-  if (filters.benefit) params.set("benefit", Array.isArray(filters.benefit) ? filters.benefit.join(",") : filters.benefit);
-  if (filters.priceMin) params.set("priceMin", filters.priceMin);
-  if (filters.priceMax) params.set("priceMax", filters.priceMax);
-  if (filters.size) params.set("size", Array.isArray(filters.size) ? filters.size.join(",") : filters.size);
-  if (filters.rating) params.set("rating", filters.rating);
-  if (filters.sort) params.set("sort", filters.sort);
-  if (filters.page) params.set("page", filters.page);
-  if (filters.limit) params.set("limit", filters.limit);
+export async function getProducts(params = {}) {
+  const searchParams = new URLSearchParams(params);
 
-  const query = params.toString();
-  return request(`${API_BASE}/products${query ? `?${query}` : ""}`);
+  // If fetching by category, append as category_id[]
+  if (params.category_id) {
+    searchParams.delete("category_id");
+    // Medusa v2 uses category_id[] for filtering
+    const ids = Array.isArray(params.category_id) ? params.category_id : [params.category_id];
+    ids.forEach(id => searchParams.append("category_id[]", id));
+  }
+  if (params.order) searchParams.set("order", params.order);
+
+  // Always expand prices and images
+  searchParams.set("fields", "+variants.calculated_price,+images");
+
+  const query = searchParams.toString();
+  return request(`${MEDUSA_BACKEND_URL}/products${query ? `?${query}` : ""}`);
 }
 
 export async function getProductById(id) {
-  return request(`${API_BASE}/products/${id}`);
+  return request(`${MEDUSA_BACKEND_URL}/products/${id}?fields=+variants.calculated_price,+images`);
 }
 
-export async function getBestsellers(limit = 8) {
-  return request(`${API_BASE}/products/bestsellers?limit=${limit}`);
+export async function getProductCategories() {
+  return request(`${MEDUSA_BACKEND_URL}/product-categories`);
 }
 
 // ============================================================
-// Cart API
+// Cart API (Medusa v2)
 // ============================================================
+
+export async function createCart(regionId) {
+  const body = {};
+  if (regionId) body.region_id = regionId;
+  
+  const data = await request(`${MEDUSA_BACKEND_URL}/carts`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+
+  if (data.cart?.id) {
+    setCartId(data.cart.id);
+  }
+
+  return data;
+}
 
 export async function getCart() {
-  return request(`${API_BASE}/cart`);
+  const cartId = getCartId();
+  if (!cartId) return null;
+
+  try {
+    return await request(`${MEDUSA_BACKEND_URL}/carts/${cartId}`);
+  } catch (error) {
+    // Cart might have expired or been completed
+    if (error.message.includes("404") || error.message.includes("not found")) {
+      removeCartId();
+      return null;
+    }
+    throw error;
+  }
 }
 
-export async function addToCart(productId, quantity = 1) {
-  return request(`${API_BASE}/cart`, {
+export async function addToCart(variantId, quantity = 1) {
+  let cartId = getCartId();
+
+  // Create a cart if one doesn't exist
+  if (!cartId) {
+    const regions = await getRegions();
+    const region = regions.regions?.[0];
+    const cartData = await createCart(region?.id);
+    cartId = cartData.cart?.id;
+  }
+
+  return request(`${MEDUSA_BACKEND_URL}/carts/${cartId}/line-items`, {
     method: "POST",
-    body: JSON.stringify({ productId, quantity }),
+    body: JSON.stringify({ variant_id: variantId, quantity }),
   });
 }
 
-export async function updateCartItem(productId, quantity) {
-  return request(`${API_BASE}/cart/${productId}`, {
-    method: "PUT",
+export async function updateCartItem(lineItemId, quantity) {
+  const cartId = getCartId();
+  if (!cartId) throw new Error("No cart found");
+
+  return request(`${MEDUSA_BACKEND_URL}/carts/${cartId}/line-items/${lineItemId}`, {
+    method: "POST",
     body: JSON.stringify({ quantity }),
   });
 }
 
-export async function removeFromCart(productId) {
-  return request(`${API_BASE}/cart/${productId}`, {
+export async function removeFromCart(lineItemId) {
+  const cartId = getCartId();
+  if (!cartId) throw new Error("No cart found");
+
+  return request(`${MEDUSA_BACKEND_URL}/carts/${cartId}/line-items/${lineItemId}`, {
     method: "DELETE",
   });
 }
 
-export async function clearCart() {
-  return request(`${API_BASE}/cart`, {
-    method: "DELETE",
-  });
-}
+export async function updateCartCustomer() {
+  const cartId = getCartId();
+  if (!cartId) return;
 
-// ============================================================
-// Wishlist API
-// ============================================================
+  const token = getToken();
+  if (!token) return;
 
-export async function getWishlist() {
-  return request(`${API_BASE}/wishlist`);
-}
-
-export async function toggleWishlist(productId) {
-  return request(`${API_BASE}/wishlist/toggle`, {
+  // Associate logged-in customer with cart
+  return request(`${MEDUSA_BACKEND_URL}/carts/${cartId}/customer`, {
     method: "POST",
-    body: JSON.stringify({ productId }),
   });
 }
 
 // ============================================================
-// Coupons API
+// Shipping & Checkout
 // ============================================================
 
-export async function applyCoupon(code, orderTotal) {
-  return request(`${API_BASE}/coupons/apply`, {
+export async function getCartShippingOptions(cartId) {
+  return request(`${MEDUSA_BACKEND_URL}/shipping-options?cart_id=${cartId}`);
+}
+
+export async function addShippingMethod(cartId, shippingOptionId) {
+  return request(`${MEDUSA_BACKEND_URL}/carts/${cartId}/shipping-methods`, {
     method: "POST",
-    body: JSON.stringify({ code, orderTotal }),
+    body: JSON.stringify({ option_id: shippingOptionId }),
   });
 }
 
-export const couponsAPI = { apply: applyCoupon };
+export async function setCartAddress(cartId, addressData) {
+  return request(`${MEDUSA_BACKEND_URL}/carts/${cartId}`, {
+    method: "POST",
+    body: JSON.stringify({
+      shipping_address: addressData,
+      billing_address: addressData,
+    }),
+  });
+}
+
+export async function initiatePaymentSession(cartId, providerId) {
+  return request(`${MEDUSA_BACKEND_URL}/carts/${cartId}/payment-sessions`, {
+    method: "POST",
+    body: JSON.stringify({ provider_id: providerId }),
+  });
+}
+
+export async function completeCart(cartId) {
+  const data = await request(`${MEDUSA_BACKEND_URL}/carts/${cartId}/complete`, {
+    method: "POST",
+  });
+
+  // Clear cart ID after completion
+  if (data.type === "order") {
+    removeCartId();
+  }
+
+  return data;
+}
+
+// ============================================================
+// Regions API
+// ============================================================
+
+export async function getRegions() {
+  return request(`${MEDUSA_BACKEND_URL}/regions`);
+}
 
 // ============================================================
 // Orders API
 // ============================================================
 
-export async function placeOrder(orderData) {
-  return request(`${API_BASE}/orders`, {
-    method: "POST",
-    body: JSON.stringify(orderData),
-  });
-}
-
-export const ordersAPI = {
-  createRazorpayOrder: async (amount) => {
-    return request(`${API_BASE}/orders/razorpay/create`, {
-      method: "POST",
-      body: JSON.stringify({ amount }),
-    });
-  },
-  verifyRazorpayPayment: async (paymentData) => {
-    return request(`${API_BASE}/orders/razorpay/verify`, {
-      method: "POST",
-      body: JSON.stringify(paymentData),
-    });
-  }
-};
-
 export async function getOrders() {
-  return request(`${API_BASE}/orders`);
+  return request(`${MEDUSA_BACKEND_URL}/orders`);
 }
 
 export async function getOrderById(id) {
-  return request(`${API_BASE}/orders/${id}`);
-}
-
-// ============================================================
-// Addresses API
-// ============================================================
-
-export async function getAddresses() {
-  return request(`${API_BASE}/addresses`);
-}
-
-export async function addAddress(addressData) {
-  return request(`${API_BASE}/addresses`, {
-    method: "POST",
-    body: JSON.stringify(addressData),
-  });
-}
-
-export async function deleteAddress(id) {
-  return request(`${API_BASE}/addresses/${id}`, {
-    method: "DELETE",
-  });
-}
-
-// ============================================================
-// Newsletter API
-// ============================================================
-
-export async function subscribeNewsletter(email) {
-  return request(`${API_BASE}/newsletter/subscribe`, {
-    method: "POST",
-    body: JSON.stringify({ email }),
-  });
+  return request(`${MEDUSA_BACKEND_URL}/orders/${id}`);
 }
 
 // ============================================================
@@ -301,226 +348,5 @@ export async function subscribeNewsletter(email) {
 // ============================================================
 
 export async function getHealthCheck() {
-  return request(`${API_BASE}/health`);
+  return request(`/health`);
 }
-
-// ============================================================
-// RBAC: Dashboard APIs
-// ============================================================
-
-export async function getSuperAdminDashboard() {
-  return request(`${API_BASE}/dashboard/super-admin`);
-}
-
-export async function getCityDistributorDashboard() {
-  return request(`${API_BASE}/dashboard/city-distributor`);
-}
-
-export async function getGymDistributorDashboard() {
-  return request(`${API_BASE}/dashboard/gym-distributor`);
-}
-
-export async function getTrainerDashboardData() {
-  return request(`${API_BASE}/dashboard/trainer`);
-}
-
-export async function getCustomerDashboardData() {
-  return request(`${API_BASE}/dashboard/customer`);
-}
-
-// ============================================================
-// RBAC: Application APIs
-// ============================================================
-
-export async function submitTrainerApplication(data) {
-  return request(`${API_BASE}/applications/trainer`, {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function submitGymApplication(data) {
-  return request(`${API_BASE}/applications/gym`, {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function getApplications(filters = {}) {
-  const params = new URLSearchParams();
-  if (filters.status) params.set("status", filters.status);
-  if (filters.type) params.set("type", filters.type);
-  if (filters.page) params.set("page", filters.page);
-  const query = params.toString();
-  return request(`${API_BASE}/applications${query ? `?${query}` : ""}`);
-}
-
-export async function reviewApplication(id, decision, reviewNotes = "") {
-  return request(`${API_BASE}/applications/${id}/review`, {
-    method: "PUT",
-    body: JSON.stringify({ decision, review_notes: reviewNotes }),
-  });
-}
-
-// ============================================================
-// RBAC: Referral APIs
-// ============================================================
-
-export async function validateReferralCode(code) {
-  return request(`${API_BASE}/referrals/validate`, {
-    method: "POST",
-    body: JSON.stringify({ code }),
-  });
-}
-
-export async function applyReferralCode(code) {
-  return request(`${API_BASE}/referrals/apply`, {
-    method: "POST",
-    body: JSON.stringify({ code }),
-  });
-}
-
-export async function getReferralInfo() {
-  return request(`${API_BASE}/referrals/my-info`);
-}
-
-// ============================================================
-// RBAC: Commission APIs
-// ============================================================
-
-export async function getMyCommissions(page = 1) {
-  return request(`${API_BASE}/commissions?page=${page}`);
-}
-
-export async function getCommissionBreakdown(page = 1) {
-  return request(`${API_BASE}/commissions/breakdown?page=${page}`);
-}
-
-// ============================================================
-// RBAC: Role / User Management APIs
-// ============================================================
-
-export async function getAllUsers(filters = {}) {
-  const params = new URLSearchParams();
-  if (filters.role) params.set("role", filters.role);
-  if (filters.page) params.set("page", filters.page);
-  const query = params.toString();
-  return request(`${API_BASE}/roles/users${query ? `?${query}` : ""}`);
-}
-
-export async function updateUserRoleApi(userId, data) {
-  return request(`${API_BASE}/roles/users/${userId}`, {
-    method: "PUT",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function getRoleProfile() {
-  return request(`${API_BASE}/roles/profile`);
-}
-
-// ============================================================
-// RBAC: Commission Rules APIs (Super Admin)
-// ============================================================
-
-export async function getCommissionRules() {
-  return request(`${API_BASE}/commission-rules`);
-}
-
-export async function createCommissionRuleApi(data) {
-  return request(`${API_BASE}/commission-rules`, {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function updateCommissionRuleApi(id, data) {
-  return request(`${API_BASE}/commission-rules/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function deleteCommissionRuleApi(id) {
-  return request(`${API_BASE}/commission-rules/${id}`, {
-    method: "DELETE",
-  });
-}
-
-// ============================================================
-// Contact Message APIs
-// ============================================================
-
-export async function submitContactMessage(data) {
-  return request(`${API_BASE}/contact`, {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function getContactMessages(page = 1) {
-  return request(`${API_BASE}/contact?page=${page}`);
-}
-
-export async function markContactMessageRead(id) {
-  return request(`${API_BASE}/contact/${id}/read`, {
-    method: "PUT",
-  });
-}
-
-// ============================================================
-// Newsletter Admin APIs
-// ============================================================
-
-export async function getNewsletterSubscribers(page = 1) {
-  return request(`${API_BASE}/newsletter/subscribers?page=${page}`);
-}
-
-// ============================================================
-// Product Admin APIs (Super Admin CRUD)
-// ============================================================
-
-export async function getAllProductsAdmin(page = 1) {
-  return request(`${API_BASE}/products/admin/all?page=${page}`);
-}
-
-export async function createProduct(data) {
-  return request(`${API_BASE}/products`, {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function updateProduct(id, data) {
-  return request(`${API_BASE}/products/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function deleteProductAdmin(id) {
-  return request(`${API_BASE}/products/${id}`, {
-    method: "DELETE",
-  });
-}
-
-// ============================================================
-// Order Admin APIs (Super Admin)
-// ============================================================
-
-export async function getAdminOrders({ search, status, page = 1 } = {}) {
-  const params = new URLSearchParams();
-  if (search) params.set("search", search);
-  if (status) params.set("status", status);
-  params.set("page", page);
-  return request(`${API_BASE}/orders/admin/all?${params.toString()}`);
-}
-
-export async function updateOrderStatusApi(id, status) {
-  return request(`${API_BASE}/orders/${id}/status`, {
-    method: "PUT",
-    body: JSON.stringify({ status }),
-  });
-}
-
-

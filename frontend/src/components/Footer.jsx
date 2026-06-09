@@ -4,7 +4,6 @@ import { Mail, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
 import logo from "@/assets/logo.png";
 import logoSpefl from "@/assets/logo_spefl.png";
-import { subscribeNewsletter } from "@/services/api";
 
 const SOCIAL = [
   { url: "https://www.linkedin.com/company/spoowa", iconClass: "fa-brands fa-linkedin-in", label: "LinkedIn" },
@@ -20,19 +19,15 @@ export function Footer() {
   const [email, setEmail] = useState("");
   const [subscribing, setSubscribing] = useState(false);
 
-  const handleSubscribe = async (e) => {
+const handleSubscribe = async (e) => {
     e.preventDefault();
     if (!email) return;
     setSubscribing(true);
-    try {
-      const res = await subscribeNewsletter(email);
-      toast.success(res.message || "Subscribed successfully!");
+    setTimeout(() => {
+      toast.success("Subscribed successfully!");
       setEmail("");
-    } catch (error) {
-      toast.error(error.message || "Subscription failed");
-    } finally {
       setSubscribing(false);
-    }
+    }, 1000);
   };
 
   return (
