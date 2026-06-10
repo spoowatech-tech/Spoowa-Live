@@ -88,7 +88,7 @@ export function Navbar() {
         scrolled ? "shadow-[0_1px_24px_rgba(43,29,18,0.10)] border-b border-[#F4B000]/10" : "border-b border-border/40"
       }`}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-[1920px] items-center justify-between px-4 py-3.5 lg:px-8">
         {/* Logo */}
         <Link to="/shop" className="inline-flex items-center shrink-0">
           <img src={logo} alt="SPOOWA Logo" className="h-9 w-auto object-contain" />

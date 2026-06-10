@@ -43,6 +43,7 @@ function App() {
             {/* Catch-all → redirect to shop */}
             <Route path="*" element={<Navigate to="/shop" replace />} />
           </Routes>
+
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

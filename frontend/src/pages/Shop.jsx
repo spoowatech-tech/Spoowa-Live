@@ -1,66 +1,209 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import {
-  Search, ChevronDown,
-  SlidersHorizontal, X,
-  ShieldCheck, Lock, Droplets, FlaskConical,
-  ArrowRight, Package, Award, Sparkles, Zap, Leaf, Truck
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Link, useLocation } from "react-router-dom";
+import { Search, Share } from "lucide-react";
+import { motion } from "framer-motion";
+import { getProducts, getRegions } from "@/services/api";
 import { AnnouncementBar, Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { getProducts, getRegions } from "@/services/api";
-import ProductCard from "@/components/ProductCard";
 
-function SkeletonCard() {
+// --- Components ---
+
+function BrandNav() {
+  const navLinks = [
+    "HOME", "HYDRATION", "ENERGY DRINKS", "HONEY BLENDS", 
+    "DISCOVERY BOXES", "SUBSCRIPTIONS", "SWEAT STREAK", 
+    "TRAINERS", "ACADEMIES", "RETAILERS", "LAB REPORTS", 
+    "INGREDIENTS", "ATHLETE PICKS", "BEST SELLERS", 
+    "NEW ARRIVALS", "OFFERS", "MORE"
+  ];
   return (
-    <div className="rounded-[24px] border border-border/40 bg-white overflow-hidden">
-      <div className="aspect-[4/5] animate-shimmer" />
-      <div className="p-5 space-y-3">
-        <div className="h-4 rounded-lg animate-shimmer" />
-        <div className="h-3 rounded-lg animate-shimmer w-2/3" />
-        <div className="h-3 rounded-lg animate-shimmer w-1/2" />
-        <div className="h-10 rounded-xl animate-shimmer mt-4" />
+    <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm w-full font-sans">
+      <div className="max-w-[1920px] mx-auto px-4 lg:px-8 h-16 flex items-center justify-between">
+        <div className="flex items-center space-x-4 min-w-max">
+          <span className="text-sm font-semibold tracking-tight">SPOOWA Brand Page</span>
+          <button className="px-4 py-1.5 text-xs font-medium bg-gray-100 hover:bg-gray-200 transition-colors rounded-full border border-gray-300">
+            Follow
+          </button>
+          <button className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700">
+            <Share className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="hidden lg:flex flex-1 overflow-x-auto items-center space-x-6 px-8 no-scrollbar">
+          {navLinks.map((link) => (
+            <Link key={link} to={`#${link.toLowerCase().replace(' ', '-')}`} className={`text-xs font-semibold whitespace-nowrap hover:text-black transition-colors ${link === 'HOME' ? 'text-black border-b-2 border-black pb-1' : 'text-gray-600'}`}>
+              {link}
+            </Link>
+          ))}
+        </div>
+        <div className="flex items-center min-w-[240px]">
+          <div className="relative w-full">
+            <input type="text" placeholder="Search all SPOOWA products" className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-function TrustSection() {
-  const items = [
-    { icon: Droplets, title: "100% Pure Honey", desc: "Sourced from trusted beekeepers", color: "from-amber-400 to-yellow-300" },
-    { icon: Truck, title: "Free Shipping", desc: "On orders above ₹499", color: "from-emerald-400 to-green-300" },
-    { icon: FlaskConical, title: "Lab Tested", desc: "For purity and quality assurance", color: "from-blue-400 to-sky-300" },
-    { icon: Lock, title: "Secure Payments", desc: "100% safe and secure checkout", color: "from-purple-400 to-violet-300" },
-  ];
+function HeroSection() {
   return (
-    <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" id="trust">
-      {items.map((item, i) => (
-        <motion.div
-          key={item.title}
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: i * 0.08 }}
-          className="flex items-center gap-4 rounded-2xl border border-border/40 bg-white p-5 shadow-card hover:shadow-lift hover:-translate-y-0.5 transition-all duration-300 group"
-        >
-          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${item.color} shadow-sm group-hover:scale-105 transition-transform`}>
-            <item.icon className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-foreground">{item.title}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
-          </div>
-        </motion.div>
-      ))}
-    </div>
+    <section className="w-full bg-[#f4f4f4] flex flex-col items-center justify-center pt-16 pb-8 min-h-[150px] max-h-[200px] overflow-hidden relative">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} className="z-10 flex flex-col items-center justify-center text-center px-4">
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-black mb-4 flex items-center">
+          SPOOWA <span className="ml-2 text-blue-500">✨</span>
+        </h1>
+      </motion.div>
+    </section>
   );
 }
 
-function Shop() {
+function BannerCardsSection() {
+  const banners = [
+    { id: 1, title: "SPOOWA Hydration Mix", subtitle: "Electrolyte powered fast recovery.", text: "Clean ingredients. Real performance.", imageUrl: "/images/banner_hydration.png", cta: "Buy Now", accent: "text-emerald-700" },
+    { id: 2, title: "SPOOWA Energy Drink", subtitle: "Clean energy without the crash.", text: "Natural Caffeine • Honey Powered • Zero Crash Energy", imageUrl: "/images/banner_energy.png", cta: "Buy Now", accent: "text-amber-600" },
+    { id: 3, title: "SPOOWA Honey Collection", subtitle: "Nature's perfect sweetness.", text: "Raw Honey • Functional Wellness • Daily Nutrition", imageUrl: "/images/banner_honey.png", cta: "Buy Now", accent: "text-yellow-600" }
+  ];
+  return (
+    <section className="max-w-[1920px] mx-auto px-4 lg:px-8 py-12 space-y-8">
+      {banners.map((banner, idx) => (
+        <motion.div key={banner.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.6 }} className="group relative bg-white rounded-3xl overflow-hidden flex flex-col md:flex-row items-center cursor-pointer h-[85vh] min-h-[600px] max-h-[900px] shadow-sm border border-gray-100">
+          
+          {/* Full Background Image */}
+          <motion.div className="absolute inset-0 w-full h-full z-0 overflow-hidden" whileHover={{ scale: 1.03 }} transition={{ duration: 0.8, ease: "easeOut" }}>
+             <img src={banner.imageUrl} alt={banner.title} className="w-full h-full object-cover md:object-right object-center" />
+          </motion.div>
+
+          {/* Text Content overlaying the white space of the image */}
+          <div className="w-full md:w-1/2 p-10 lg:p-24 text-center md:text-left z-20 flex flex-col justify-center items-center md:items-start h-full relative pointer-events-none">
+            <h2 className={`text-5xl lg:text-7xl font-black tracking-tight mb-4 drop-shadow-sm ${banner.accent}`}>{banner.title}</h2>
+            <p className="text-2xl lg:text-3xl text-gray-900 mb-4 font-bold tracking-tight">{banner.subtitle}</p>
+            <p className="text-lg lg:text-xl text-gray-700 mb-10 max-w-[450px] font-medium leading-relaxed">{banner.text}</p>
+            <button className="px-10 py-4 bg-black text-white font-extrabold tracking-widest uppercase rounded-full hover:bg-gray-800 transition-colors text-sm pointer-events-auto shadow-xl hover:-translate-y-1 active:translate-y-0 transform">{banner.cta}</button>
+          </div>
+          
+        </motion.div>
+      ))}
+    </section>
+  );
+}
+
+function SmallBannersSection() {
+  const banners = [
+    { id: 1, title: "SPOOWA Hydration Mix", subtitle: "Electrolyte powered fast recovery.", imageUrl: "/images/small_hydration.png", cta: "Buy now" },
+    { id: 2, title: "SPOOWA Energy Drink", subtitle: "Clean energy without the crash.", imageUrl: "/images/small_energy.png", cta: "Buy now" },
+    { id: 3, title: "SPOOWA Honey Collection", subtitle: "Nature's perfect sweetness.", imageUrl: "/images/small_honey.png", cta: "Buy now" }
+  ];
+  return (
+    <section className="max-w-[1920px] mx-auto px-4 lg:px-8 py-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {banners.map((banner, idx) => (
+          <motion.div key={banner.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.6, delay: idx * 0.1 }} whileHover={{ y: -5 }} className="group relative bg-white rounded-3xl overflow-hidden flex flex-col items-center pt-10 px-6 pb-0 cursor-pointer h-[500px] border border-gray-100 shadow-sm">
+            
+            {/* Full Background Image */}
+            <motion.div className="absolute inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
+              <motion.img src={banner.imageUrl} alt={banner.title} className="w-full h-full object-cover object-bottom mix-blend-multiply" whileHover={{ scale: 1.05 }} transition={{ duration: 0.4 }} />
+            </motion.div>
+
+            {/* Text Overlay */}
+            <div className="text-center z-10 mb-8 flex flex-col items-center relative pointer-events-none">
+              <h2 className="text-2xl lg:text-3xl font-black tracking-tight text-black mb-2 drop-shadow-md">{banner.title}</h2>
+              <p className="text-sm text-gray-700 font-medium mb-6 max-w-[250px]">{banner.subtitle}</p>
+              <button className="px-8 py-2.5 bg-black text-white font-bold uppercase tracking-wider rounded-full hover:bg-gray-800 transition-colors text-xs pointer-events-auto shadow-md">{banner.cta}</button>
+            </div>
+            
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MixedGridSection({ leftCard, rightCards }) {
+  return (
+    <section className="max-w-[1920px] mx-auto px-4 lg:px-8 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-[600px] md:min-h-[700px]">
+        {/* Left Card */}
+        <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.7 }} className="bg-[#fcfcfc] rounded-3xl overflow-hidden flex flex-col items-center pt-14 px-8 pb-0 relative group shadow-sm border border-gray-100 min-h-[500px]">
+          
+          <div className="text-center z-10 flex flex-col items-center relative pointer-events-none mt-4">
+            <h2 className="text-4xl lg:text-6xl font-black tracking-tight text-black mb-4 drop-shadow-md">{leftCard.title}</h2>
+            <button className="px-10 py-3 bg-black text-white font-bold uppercase tracking-widest rounded-full hover:bg-gray-800 transition-colors text-sm mb-8 pointer-events-auto shadow-xl">{leftCard.cta}</button>
+          </div>
+
+          <div className="absolute inset-0 w-full h-full z-0 flex items-end justify-center pointer-events-none pb-4">
+            <motion.img src={leftCard.imageUrl} alt={leftCard.title} className="w-full h-[85%] md:h-[95%] object-contain object-bottom mix-blend-multiply scale-[1.15]" whileHover={{ scale: 1.2 }} transition={{ duration: 0.6 }} />
+          </div>
+        </motion.div>
+        
+        {/* Right Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {rightCards.map((card, idx) => (
+            <motion.div key={idx} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.5, delay: idx * 0.1 }} className="bg-white rounded-3xl p-6 flex flex-col items-center justify-between text-center cursor-pointer relative overflow-hidden group shadow-sm border border-gray-100 min-h-[320px]">
+              
+              {/* Full absolute background */}
+              <motion.div className="absolute inset-0 w-full h-full z-0 pointer-events-none">
+                {card.imageUrl && (
+                  <motion.img src={card.imageUrl} alt={card.title} className="w-full h-full object-cover object-center mix-blend-multiply" whileHover={{ scale: 1.05 }} transition={{ duration: 0.5 }} />
+                )}
+              </motion.div>
+
+              {/* Text Overlay box at the top */}
+              <div className="relative z-10 flex flex-col items-center pointer-events-none bg-white/70 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.06)] w-[90%]">
+                <h3 className="text-xl font-black tracking-tight text-black mb-1 line-clamp-1">{card.title}</h3>
+                <p className="text-[11px] text-gray-800 font-bold mb-0 line-clamp-1 uppercase tracking-wider">{card.subtitle}</p>
+              </div>
+
+              {/* Button at the bottom */}
+              <div className="relative z-10 mt-auto">
+                 <button className="px-8 py-2.5 bg-black text-white font-bold uppercase tracking-wider rounded-full hover:bg-gray-800 transition-colors text-xs pointer-events-auto shadow-lg hover:-translate-y-1 transform">Buy now</button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SideBySideSection({ card1, card2 }) {
+  const CardContent = ({ card }) => (
+    <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-100px" }} transition={{ duration: 0.6 }} className={`relative bg-white rounded-3xl overflow-hidden flex flex-col pt-12 px-8 pb-8 cursor-pointer min-h-[450px] border border-gray-100 shadow-sm group ${card.bgColor || ''}`}>
+      
+      {/* Full absolute background */}
+      <motion.div className="absolute inset-0 w-full h-full z-0 pointer-events-none" whileHover={{ scale: 1.03 }} transition={{ duration: 0.8, ease: "easeOut" }}>
+        {card.imageUrl && (
+           <img src={card.imageUrl} alt={card.title} className="w-full h-full object-cover object-bottom mix-blend-multiply" />
+        )}
+      </motion.div>
+
+      <div className="z-10 flex flex-col items-center text-center relative pointer-events-none">
+        <h2 className="text-3xl lg:text-4xl font-black tracking-tight text-black mb-4 drop-shadow-sm">{card.title}</h2>
+        {card.features && card.features.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-2 mb-8">
+            {card.features.map((feature, idx) => (
+              <span key={idx} className="px-3 py-1.5 bg-white/80 backdrop-blur-sm text-gray-800 text-[11px] font-bold uppercase tracking-wider rounded-full border border-white shadow-sm">{feature}</span>
+            ))}
+          </div>
+        )}
+        <button className="px-8 py-3 bg-black text-white font-bold uppercase tracking-wider rounded-full hover:bg-gray-800 transition-colors text-xs pointer-events-auto shadow-xl hover:-translate-y-1 transform">{card.cta || "Explore"}</button>
+      </div>
+    </motion.div>
+  );
+  return (
+    <section className="max-w-[1920px] mx-auto px-4 lg:px-8 py-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <CardContent card={card1} />
+        <CardContent card={card2} />
+      </div>
+    </section>
+  );
+}
+
+// --- Main Page ---
+
+export default function Shop() {
   const [products, setProducts] = useState([]);
-  const [sortBy, setSortBy] = useState("best-selling");
-  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -79,210 +222,62 @@ function Shop() {
     loadProducts();
   }, []);
 
-  // Filter by search
-  const filteredProducts = products.filter(p => {
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      return (
-        p.title?.toLowerCase().includes(q) ||
-        p.description?.toLowerCase().includes(q) ||
-        p.handle?.toLowerCase().includes(q)
-      );
+  // Use real products if available, otherwise fallback
+  const getProductCardData = (index, fallback) => {
+    if (products[index]) {
+      return {
+        title: products[index].title,
+        subtitle: products[index].description || fallback.subtitle,
+        imageUrl: products[index].thumbnail || fallback.imageUrl,
+        bgColor: fallback.bgColor
+      };
     }
-    return true;
-  });
+    return fallback;
+  };
 
-  // Sort products
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const priceA = a.variants?.[0]?.calculated_price?.calculated_amount || 0;
-    const priceB = b.variants?.[0]?.calculated_price?.calculated_amount || 0;
-    switch (sortBy) {
-      case "new-arrivals":
-        return new Date(b.created_at) - new Date(a.created_at);
-      case "price-low-high":
-        return priceA - priceB;
-      case "price-high-low":
-        return priceB - priceA;
-      default:
-        return 0; // default order
-    }
-  });
+  const newlyLaunchedLeft = { title: "Newly Launched", cta: "Explore All", imageUrl: "/images/mixed_showcase.png" };
+  const newlyLaunchedRight = [
+    getProductCardData(0, { title: "Energy Drink", subtitle: "Clean Energy Formula", imageUrl: "/images/mixed_energy.png", bgColor: "bg-green-50" }),
+    getProductCardData(1, { title: "Honey + Matcha", subtitle: "Wellness Infused", imageUrl: "/images/mixed_matcha.png", bgColor: "bg-purple-50" }),
+    getProductCardData(2, { title: "Honey + Cinnamon", subtitle: "Warm Natural Energy", imageUrl: "/images/mixed_cinnamon.png", bgColor: "bg-pink-50" }),
+    getProductCardData(3, { title: "Discovery Box", subtitle: "Premium Subscription", imageUrl: "/images/mixed_discovery.png", bgColor: "bg-blue-50" })
+  ];
+
+  const athleteFavoritesLeft = { title: "Athlete Favorites", cta: "Explore All", imageUrl: "/images/athlete_showcase.png" };
+  const athleteFavoritesRight = [
+    getProductCardData(4, { title: "Electrolyte Mix", subtitle: "Fast Absorption", imageUrl: "/images/athlete_hydration.png" }),
+    getProductCardData(5, { title: "Tropical Energy", subtitle: "Zero Crash", imageUrl: "/images/athlete_energy.png" }),
+    getProductCardData(6, { title: "Kesar Honey", subtitle: "Pure Golden Amber", imageUrl: "/images/athlete_honey.png" }),
+    getProductCardData(7, { title: "Recovery Blend", subtitle: "Post Workout", imageUrl: "/images/athlete_recovery.png" })
+  ];
+
+  const hydrationCollection = { title: "Hydration Collection", features: ["Electrolytes", "Clean Label", "Fast Recovery"], imageUrl: "/images/collection_hydration.png" };
+  const energyCollection = { title: "Energy Collection", features: ["Natural Caffeine", "Honey Powered", "Zero Crash"], imageUrl: "/images/collection_energy.png" };
+  const honeyWellness = { title: "Honey Wellness Collection", features: ["Natural Nutrition", "Daily Wellness"], imageUrl: "/images/collection_honey.png" };
+  const performanceNutrition = { title: "Performance Nutrition Collection", features: ["Scientific Nutrition", "Sports Performance"], imageUrl: "/images/collection_performance.png" };
+  const buildBox = { title: "Build Your Own Box" };
+  const subscriptions = { title: "Subscription Packs" };
 
   return (
-    <div className="min-h-screen bg-[#FFFDF7] font-body">
+    <div className="bg-white min-h-screen">
       <AnnouncementBar />
       <Navbar />
+      <HeroSection />
+      <BrandNav />
+      <SmallBannersSection />
+      
+      {!loading && (
+        <>
+          <MixedGridSection leftCard={newlyLaunchedLeft} rightCards={newlyLaunchedRight} />
+          <MixedGridSection leftCard={athleteFavoritesLeft} rightCards={athleteFavoritesRight} />
+        </>
+      )}
 
-      {/* ── Hero Banner ── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#FFFBEB] via-[#FFFDF5] to-[#FEF3C7] border-b border-[#F4B000]/10">
-        {/* Decorative background grid */}
-        <div className="absolute inset-0 opacity-[0.025] pointer-events-none" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23F4B000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }} />
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-[#F4B000]/8 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-[#D4AF37]/8 blur-[120px] pointer-events-none" />
-
-        <div className="mx-auto w-[95%] max-w-7xl px-4 py-14 sm:py-20">
-          <div className="grid items-center gap-10 lg:grid-cols-12">
-            {/* Left */}
-            <div className="lg:col-span-7">
-              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-[#F4B000]/25 bg-white/70 backdrop-blur-sm px-4 py-1.5 text-[11px] font-extrabold tracking-[0.2em] text-[#D88A00] uppercase shadow-sm">
-                  <Sparkles className="h-3.5 w-3.5" /> Pure by Nature, Made for You
-                </span>
-                <h1 className="mt-5 font-display text-[3.5rem] leading-[1.04] sm:text-[4.5rem] lg:text-[5rem] font-black text-[#2B1D12] tracking-tight">
-                  Discover Pure<br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F4B000] to-[#E59700]">
-                    Honey Goodness
-                  </span>
-                </h1>
-                <p className="mt-5 max-w-lg text-[17px] leading-relaxed text-gray-600 font-medium">
-                  Experience nature's finest honey collection — crafted for wellness, energy, immunity, and everyday health.
-                </p>
-                <div className="mt-8 flex flex-wrap gap-4">
-                  <a href="#product-grid" className="group inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-[#F4B000] to-[#E59700] px-8 py-4 text-sm font-extrabold tracking-wide text-white shadow-[0_8px_30px_rgba(244,176,0,0.35)] hover:shadow-[0_12px_40px_rgba(244,176,0,0.45)] hover:-translate-y-0.5 transition-all active:scale-[0.98]">
-                    Explore Collection <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </a>
-                  <a href="#trust" className="group inline-flex items-center gap-2.5 rounded-full border-2 border-gray-200 bg-white/80 backdrop-blur-sm px-8 py-4 text-sm font-bold text-foreground/70 hover:border-[#F4B000]/40 hover:text-foreground transition-all">
-                    <ShieldCheck className="h-4 w-4 text-[#F4B000]" /> Lab Tested Quality
-                  </a>
-                </div>
-                {/* Stats */}
-                <div className="mt-10 flex items-center gap-8 divide-x divide-gray-200">
-                  {[["24+", "Honey Variants"], ["50K+", "Happy Customers"], ["100%", "Pure & Natural"]].map(([stat, label]) => (
-                    <div key={label} className="flex flex-col pl-8 first:pl-0">
-                      <span className="text-2xl font-black text-[#2B1D12]">{stat}</span>
-                      <span className="text-[11px] font-semibold text-muted-foreground tracking-wide mt-0.5">{label}</span>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Right visual */}
-            <div className="relative lg:col-span-5 flex items-center justify-center">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.88 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.7, delay: 0.15 }}
-                className="relative"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-[#F4B000]/20 to-[#D4AF37]/10 rounded-full blur-[80px] scale-150" />
-                <div className="relative h-[320px] w-[320px] sm:h-[400px] sm:w-[400px] rounded-full border-2 border-[#F4B000]/12 bg-white/50 backdrop-blur-sm flex items-center justify-center shadow-[0_0_80px_rgba(244,176,0,0.10)]">
-                  <div className="absolute inset-4 rounded-full border border-[#F4B000]/8" />
-                  <div className="absolute inset-10 rounded-full border border-[#F4B000]/5" />
-                  <div className="flex flex-col items-center gap-3">
-                    <span className="text-7xl sm:text-8xl animate-float drop-shadow-[0_10px_25px_rgba(244,176,0,0.22)]">🍯</span>
-                    <span className="text-xs font-extrabold text-[#D88A00] tracking-[0.25em] uppercase">Premium Honey</span>
-                  </div>
-                  {/* Floating badges */}
-                  <div className="absolute -top-5 -right-5 h-16 w-16 rounded-2xl bg-white border border-[#F4B000]/15 flex items-center justify-center shadow-card animate-float" style={{ animationDelay: "0.5s" }}>
-                    <Award className="h-7 w-7 text-[#F4B000]" />
-                  </div>
-                  <div className="absolute -bottom-3 -left-5 h-14 w-14 rounded-2xl bg-white border border-[#F4B000]/15 flex items-center justify-center shadow-card animate-float" style={{ animationDelay: "1s" }}>
-                    <Leaf className="h-6 w-6 text-green-500" />
-                  </div>
-                  <div className="absolute top-1/2 -right-8 h-12 w-12 rounded-2xl bg-white border border-[#F4B000]/15 flex items-center justify-center shadow-card animate-float" style={{ animationDelay: "1.5s" }}>
-                    <Zap className="h-5 w-5 text-[#F4B000]" />
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Main Content ── */}
-      <main className="mx-auto w-[95%] max-w-7xl px-4 py-10 sm:px-6 lg:py-14" id="product-grid">
-        {/* Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-3">
-            {/* Search */}
-            <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 min-w-[200px] sm:min-w-[280px]">
-              <Search className="h-4 w-4 text-gray-400 shrink-0" />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 text-sm font-medium text-gray-700 placeholder:text-gray-300 outline-none bg-transparent"
-              />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery("")} className="text-gray-300 hover:text-gray-500">
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-            <p className="text-sm font-semibold text-foreground/60">
-              <span className="text-foreground font-bold">{sortedProducts.length}</span> products
-            </p>
-          </div>
-
-          {/* Sort control */}
-          <div className="relative flex items-center gap-2">
-            <span className="text-xs font-semibold text-muted-foreground hidden sm:block">Sort:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="rounded-xl border border-border bg-white pl-4 pr-9 py-2.5 text-sm font-bold text-foreground shadow-sm outline-none focus:border-[#F4B000] focus:ring-2 focus:ring-[#F4B000]/15 transition-all appearance-none cursor-pointer"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "right 12px center",
-              }}
-            >
-              <option value="best-selling">Best Selling</option>
-              <option value="new-arrivals">New Arrivals</option>
-              <option value="price-low-high">Price: Low → High</option>
-              <option value="price-high-low">Price: High → Low</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Product Grid */}
-        {loading ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
-        ) : sortedProducts.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {sortedProducts.map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
-            ))}
-          </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center py-24 text-center"
-          >
-            <div className="h-24 w-24 rounded-[28px] bg-[#FFF8E8] flex items-center justify-center mb-6 border border-[#F4B000]/15 shadow-sm">
-              <Package className="h-12 w-12 text-[#F4B000]/60" />
-            </div>
-            <h3 className="text-xl font-black text-foreground font-display">No products found</h3>
-            <p className="text-sm text-muted-foreground mt-2 max-w-sm">
-              {searchQuery
-                ? "No products match your search. Try a different term."
-                : "No products available yet. Check back soon!"}
-            </p>
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="mt-6 rounded-xl bg-gradient-to-r from-[#F4B000] to-[#E59700] px-7 py-3 text-sm font-extrabold text-white shadow-gold hover:-translate-y-0.5 transition-all"
-              >
-                Clear Search
-              </button>
-            )}
-          </motion.div>
-        )}
-
-        {/* Trust Section */}
-        <TrustSection />
-      </main>
-
+      <SideBySideSection card1={hydrationCollection} card2={energyCollection} />
+      <SideBySideSection card1={honeyWellness} card2={performanceNutrition} />
+      
+      <div className="h-24"></div>
       <Footer />
     </div>
   );
 }
-
-export default Shop;
