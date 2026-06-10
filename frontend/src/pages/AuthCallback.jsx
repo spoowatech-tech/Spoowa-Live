@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 /**
  * AuthCallback — handles the OAuth redirect from the backend.
  * 
- * After a user completes Google/Facebook login, the backend redirects here
+ * After a user completes Google login, the backend redirects here
  * with ?token=<jwt>. This component stores the token, fetches the user
  * profile, and redirects to /shop.
  */

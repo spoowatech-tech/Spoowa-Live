@@ -31,15 +31,7 @@ module.exports = defineConfig({
               callbackUrl: process.env.GOOGLE_CALLBACK_URL || "http://localhost:9000/auth/customer/google/callback",
             },
           },
-          {
-            resolve: "./src/modules/auth-facebook",
-            id: "facebook",
-            options: {
-              clientId: process.env.FACEBOOK_APP_ID,
-              clientSecret: process.env.FACEBOOK_APP_SECRET,
-              callbackUrl: process.env.FACEBOOK_CALLBACK_URL || "http://localhost:9000/auth/customer/facebook/callback",
-            },
-          },
+
         ],
       },
     },

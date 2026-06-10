@@ -134,7 +134,7 @@ export function isLoggedIn() {
 /**
  * Returns the backend URL to initiate a social OAuth flow.
  * Redirecting the browser to this URL will start the OAuth consent screen.
- * @param {'google' | 'facebook'} provider
+ * @param {'google'} provider
  */
 export function getSocialAuthUrl(provider) {
   // This hits the Medusa backend directly (not proxied /store)
