@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 
 import Shop from './pages/Shop';
+import Products from './pages/Products';
+import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import Auth from './pages/Auth';
@@ -35,6 +37,8 @@ function App() {
             
             {/* Core Pages */}
             <Route path="/shop" element={<Shop />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/auth" element={<Auth />} />

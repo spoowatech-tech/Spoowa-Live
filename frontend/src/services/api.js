@@ -185,8 +185,11 @@ export async function getProducts(params = {}) {
   return request(`${MEDUSA_BACKEND_URL}/products${query ? `?${query}` : ""}`);
 }
 
-export async function getProductById(id) {
-  return request(`${MEDUSA_BACKEND_URL}/products/${id}?fields=+variants.calculated_price,+images`);
+export async function getProductById(id, regionId) {
+  const params = new URLSearchParams();
+  params.set("fields", "+variants.calculated_price,+images");
+  if (regionId) params.set("region_id", regionId);
+  return request(`${MEDUSA_BACKEND_URL}/products/${id}?${params.toString()}`);
 }
 
 export async function getProductCategories() {

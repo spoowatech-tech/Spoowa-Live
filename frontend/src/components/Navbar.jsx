@@ -75,6 +75,7 @@ export function Navbar() {
 
   const links = [
     { label: "Shop", to: "/shop" },
+    { label: "Explore All", to: "/products" },
     { label: "Cart", to: "/cart" },
   ];
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { ShoppingBag, Plus, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCart } from "@/context/CartContext";
@@ -59,6 +60,7 @@ function ProductCard({ product, index = 0 }) {
   };
 
   return (
+    <Link to={`/product/${product.id}`} className="block">
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -136,6 +138,7 @@ function ProductCard({ product, index = 0 }) {
         </button>
       </div>
     </motion.div>
+    </Link>
   );
 }
 
